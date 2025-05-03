@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Code Visualizer</title>
+  	<link rel="stylesheet" href="style.css" />
+  	<!-- Vis Network CSS -->
+<link
+  href="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/styles/vis-network.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Vis Network JS -->
+<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/standalone/umd/vis-network.min.js"></script>
+
+  	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.10.0/acorn.min.js"></script>
+</head>
+<body>
+	<h1>Code Mind Map</h1>
+	<input type="file" id="zipUpload" accept=".zip" />
+	<button id="analyzeZipBtn">Analyze</button>
+	<div id="classGraph" style="width: 100%; height: 600px;"></div>
+	<div id="mindMap"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+	<script src="parser.js"></script>
+	<script src="visualizer.js"></script>
+	<script src="app.js"></script>
+	
+</body>
+</html>

@@ -1,0 +1,26 @@
+.class-tree,
+.class-tree ul {
+  list-style: none;
+  padding-left: 1em;
+}
+
+.class-node {
+  cursor: pointer;
+  margin: 0.2em 0;
+}
+
+.class-node .toggle-btn {
+  display: inline-block;
+  width: 1em;
+  margin-right: 0.2em;
+}
+
+.child-list.hidden {
+  display: none;
+}
+
+.method-list {
+  font-size: 0.9em;
+  color: #444;
+  margin-left: 1.5em;
+}
