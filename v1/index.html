@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mind Map Tool</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ‼️ Top‑bar controls -->
+    <div id="controls">
+      <button id="clearBtn">Clear Map</button>
+      <button id="exportBtn">Export Map</button>
+      <input type="file" id="importInput" />
+      <!-- Breadcrumb trail will be populated here by JS → keeps it *below* the buttons -->
+      <span id="breadcrumb"></span>
+    </div>
+
+    <!-- Main drawing surface -->
+    <div id="canvas"></div>
+    <svg id="connections"></svg>
+
+    <script src="script.js"></script>
+  </body>
+</html>

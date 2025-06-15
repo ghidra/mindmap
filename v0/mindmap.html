@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mind Map Tool</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    #canvas { width: 100vw; height: 100vh; background: #f0f0f0; position: relative; overflow: hidden; }
+    .node {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 5px;
+      border-radius: 5px;
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      cursor: move;
+    }
+    svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <button onclick="clearMap()" style="margin: 5px;">Clear Map</button>
+  <button onclick="exportMap()" style="margin: 5px;">Export Map</button>
+  <input type="file" onchange="importMap(event)" style="margin: 5px;" />
+  <div id="canvas" onclick="handleCanvasClick(event)"></div>
+  <svg id="connections" width="100%" height="100%"></svg>
+  <script>
+    let nodes = JSON.parse(localStorage.getItem('mindmap')) || [];
+    let draggingFrom = null;
+    let draggingNode = null;
+    let offsetX = 0;
+    let offsetY = 0;
+    let currentPath = [];
+    const canvas = document.getElementById('canvas');
+    const svg = document.getElementById('connections');
+
+    function getCurrentMap() {
+      let map = { children: nodes };
+      for (const id of currentPath) {
+        map = map.children.find(n => n.id === id);
+      }
+      return map.children || [];
+    }
+
+    function saveMap() {
+      localStorage.setItem('mindmap', JSON.stringify(nodes));
+    }
+
+    function clearMap() {
+      localStorage.removeItem('mindmap');
+      nodes = [];
+      render();
+    }
+
+    function exportMap() {
+      const blob = new Blob([JSON.stringify(nodes, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mindmap.json';
+      a.click();
+    }
+
+    function importMap(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          nodes = JSON.parse(e.target.result);
+          saveMap();
+          render();
+        } catch (err) {
+          alert('Invalid file');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function handleCanvasClick(e) {
+      if (e.target !== canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const localNodes = getCurrentMap();
+      const threshold = 50;
+      const tooClose = localNodes.some(n => Math.hypot(n.x - x, n.y - y) < threshold);
+      if (tooClose) return;
+
+      const id = Date.now().toString();
+      localNodes.push({ id, x, y, title: 'New Node', connections: [], children: [], expanded: true, color: '#ffffff' });
+      render();
+    }
+
+    function connectNodes(fromId, toId) {
+      const localNodes = getCurrentMap();
+      const fromNode = localNodes.find(n => n.id === fromId);
+      if (fromNode && !fromNode.connections.includes(toId)) {
+        fromNode.connections.push(toId);
+      }
+    }
+
+    function render() {
+      const localNodes = getCurrentMap();
+      canvas.innerHTML = '';
+      svg.innerHTML = '';
+
+      localNodes.forEach(node => {
+        const el = document.createElement('div');
+        el.className = 'node';
+        el.style.left = node.x + 'px';
+        el.style.top = node.y + 'px';
+        el.style.backgroundColor = node.color || '#ffffff';
+
+        el.onmousedown = (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.tagName === 'COLOR') return;
+          draggingNode = node;
+          offsetX = e.offsetX;
+          offsetY = e.offsetY;
+        };
+
+        const input = document.createElement('input');
+        input.value = node.title;
+        input.oninput = (e) => {
+          node.title = e.target.value;
+          saveMap();
+        };
+        el.appendChild(input);
+
+        const linkBtn = document.createElement('button');
+        linkBtn.textContent = 'Link';
+        linkBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (draggingFrom) {
+            connectNodes(draggingFrom, node.id);
+            draggingFrom = null;
+            render();
+          } else {
+            draggingFrom = node.id;
+          }
+        };
+        el.appendChild(linkBtn);
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = node.expanded ? '-' : '+';
+        toggleBtn.onclick = (e) => {
+          e.stopPropagation();
+          node.expanded = !node.expanded;
+          render();
+        };
+        el.appendChild(toggleBtn);
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = node.color || '#ffffff';
+        colorInput.onchange = (e) => {
+          node.color = e.target.value;
+          render();
+        };
+        el.appendChild(colorInput);
+
+        const examineBtn = document.createElement('button');
+        examineBtn.textContent = 'Examine';
+        examineBtn.onclick = (e) => {
+          e.stopPropagation();
+          currentPath.push(node.id);
+          render();
+        };
+        el.appendChild(examineBtn);
+
+        const indicator = document.createElement('span');
+        indicator.textContent = node.children?.length > 0 ? ' 📁' : '';
+        el.appendChild(indicator);
+
+        canvas.appendChild(el);
+      });
+
+      localNodes.forEach(from => {
+        from.connections.forEach(toId => {
+          const to = localNodes.find(n => n.id === toId);
+          if (to && to.expanded) {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", from.x + 50);
+            line.setAttribute("y1", from.y + 20);
+            line.setAttribute("x2", to.x + 50);
+            line.setAttribute("y2", to.y + 20);
+            line.setAttribute("stroke", "black");
+            svg.appendChild(line);
+          }
+        });
+      });
+
+      const breadcrumb = document.createElement('div');
+      breadcrumb.style.position = 'absolute';
+      breadcrumb.style.top = '0';
+      breadcrumb.style.left = '0';
+      breadcrumb.style.background = 'white';
+      breadcrumb.style.padding = '4px';
+      breadcrumb.style.zIndex = '1000';
+
+      const rootBtn = document.createElement('button');
+      rootBtn.textContent = 'Root';
+      rootBtn.onclick = () => {
+        currentPath = [];
+        render();
+      };
+      breadcrumb.appendChild(rootBtn);
+
+      let pathSoFar = [];
+      currentPath.forEach((id, idx) => {
+        pathSoFar.push(id);
+        const node = pathSoFar.reduce((acc, id) => acc.children.find(n => n.id === id), { children: nodes });
+        const btn = document.createElement('button');
+        btn.textContent = ' > ' + node.title;
+        btn.onclick = () => {
+          currentPath = currentPath.slice(0, idx + 1);
+          render();
+        };
+        breadcrumb.appendChild(btn);
+      });
+
+      document.body.appendChild(breadcrumb);
+
+      saveMap();
+    }
+
+    document.addEventListener('mouseup', () => draggingNode = null);
+    document.addEventListener('mousemove', (e) => {
+      if (draggingNode) {
+        const rect = canvas.getBoundingClientRect();
+        draggingNode.x = e.clientX - rect.left - offsetX;
+        draggingNode.y = e.clientY - rect.top - offsetY;
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
