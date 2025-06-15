@@ -13,7 +13,26 @@ function render() {
   canvas.innerHTML = '';
   svg.innerHTML = '';
 
-  // Draw temporary connection line if draggingFromId is active
+  // Draw permanent connections first
+  arr.forEach(n => {
+    if (n.connections && n.connections.length) {
+      n.connections.forEach(toId => {
+        const toNode = arr.find(target => target.id === toId);
+        if (toNode) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', n.x + 60);
+          line.setAttribute('y1', n.y + 20);
+          line.setAttribute('x2', toNode.x + 60);
+          line.setAttribute('y2', toNode.y + 20);
+          line.setAttribute('stroke', 'black');
+          line.setAttribute('stroke-width', '2');
+          svg.appendChild(line);
+        }
+      });
+    }
+  });
+
+  
   if (window.draggingFromId && window.mouseX !== undefined && window.mouseY !== undefined) {
     const fromNode = arr.find(n => n.id === window.draggingFromId);
     const rect = canvas.getBoundingClientRect();
@@ -25,10 +44,11 @@ function render() {
       line.setAttribute('y1', fromNode.y + 20);
       line.setAttribute('x2', x2);
       line.setAttribute('y2', y2);
-      line.setAttribute('stroke', 'gray');
-      line.setAttribute('stroke-dasharray', '4');
+      line.setAttribute('stroke', '#666');
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('stroke-dasharray', '5,5');
+      line.setAttribute('pointer-events', 'none');
       svg.appendChild(line);
-      console.log('Drawing temp line', { fromNode, x2, y2 });
     }
   }
 
