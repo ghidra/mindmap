@@ -18,12 +18,12 @@ function render() {
     if (n.connections && n.connections.length) {
       n.connections.forEach(toId => {
         const toNode = arr.find(target => target.id === toId);
-        if (toNode) {
+        if (toNode && n.handleX !== undefined && toNode.handleX !== undefined) {
           const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          line.setAttribute('x1', n.x + 60);
-          line.setAttribute('y1', n.y + 20);
-          line.setAttribute('x2', toNode.x + 60);
-          line.setAttribute('y2', toNode.y + 20);
+          line.setAttribute('x1', n.handleX);
+          line.setAttribute('y1', n.handleY);
+          line.setAttribute('x2', toNode.handleX);
+          line.setAttribute('y2', toNode.handleY);
           line.setAttribute('stroke', 'black');
           line.setAttribute('stroke-width', '2');
           svg.appendChild(line);
@@ -32,16 +32,16 @@ function render() {
     }
   });
 
-  
+  // Draw temporary connection line if draggingFromId is active
   if (window.draggingFromId && window.mouseX !== undefined && window.mouseY !== undefined) {
     const fromNode = arr.find(n => n.id === window.draggingFromId);
     const rect = canvas.getBoundingClientRect();
     const x2 = window.mouseX - rect.left;
     const y2 = window.mouseY - rect.top;
-    if (fromNode) {
+    if (fromNode && fromNode.handleX !== undefined) {
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', fromNode.x + 60);
-      line.setAttribute('y1', fromNode.y + 20);
+      line.setAttribute('x1', fromNode.handleX);
+      line.setAttribute('y1', fromNode.handleY);
       line.setAttribute('x2', x2);
       line.setAttribute('y2', y2);
       line.setAttribute('stroke', '#666');
@@ -54,96 +54,108 @@ function render() {
 
   arr.forEach(n => {
     const el = document.createElement('div');
-el.dataset.id = n.id;
+    el.dataset.id = n.id;
     el.className = 'node';
     el.style.left = n.x + 'px';
     el.style.top  = n.y + 'px';
     el.style.backgroundColor = n.color || '#ffffff';
 
     // Add drag-to-connect handle
-const handle = document.createElement('span');
-handle.className = 'handle';
-handle.dataset.nodeId = n.id;
-el.appendChild(handle);
+    const handle = document.createElement('span');
+    handle.className = 'handle';
+    handle.dataset.nodeId = n.id;
+    el.appendChild(handle);
 
-const input = document.createElement('input');
+    // After appending to DOM, get handle's actual position
+    canvas.appendChild(el);
+    const handleRect = handle.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const handleX = handleRect.left - canvasRect.left + handleRect.width/2;
+    const handleY = handleRect.top - canvasRect.top + handleRect.height/2;
+    console.log('Handle position for node', n.id, ':', { handleX, handleY, nodeX: n.x, nodeY: n.y });
+
+    // Store handle position for connection lines
+    n.handleX = handleX;
+    n.handleY = handleY;
+
+    const input = document.createElement('input');
     input.name = 'title_' + n.id;
     input.value = n.title;
     input.oninput = e => { n.title = e.target.value; save(); };
     el.appendChild(input);
 
     // Add color picker
-const colorInput = document.createElement('input');
-colorInput.type = 'color';
-colorInput.value = n.color || '#ffffff';
-colorInput.onchange = e => {
-  n.color = e.target.value;
-  render();
-};
-el.appendChild(colorInput);
-
-// Add child node button
-const childBtn = document.createElement('button');
-childBtn.textContent = '+ Child';
-childBtn.onclick = e => {
-  e.stopPropagation();
-  n.children.push({
-    id: Date.now().toString(36),
-    x: n.x + 40,
-    y: n.y + 40,
-    title: 'Child Node',
-    color: '#ffffff',
-    expanded: true,
-    connections: [],
-    children: []
-  });
-  render();
-};
-el.appendChild(childBtn);
-
-// Add examine button
-const examineBtn = document.createElement('button');
-examineBtn.textContent = 'Examine';
-examineBtn.onclick = e => {
-  e.stopPropagation();
-  state.path.push(n.id);
-  render();
-};
-el.appendChild(examineBtn);
-
-// Add expand/collapse toggle
-const toggleBtn = document.createElement('button');
-toggleBtn.textContent = n.expanded ? '−' : '+';
-toggleBtn.onclick = e => {
-  e.stopPropagation();
-  n.expanded = !n.expanded;
-  render();
-};
-el.appendChild(toggleBtn);
-
-// Show children inline if expanded
-if (n.expanded && n.children.length) {
-  const list = document.createElement('ul');
-  list.className = 'child-list';
-  n.children.forEach((child, i) => {
-    const li = document.createElement('li');
-    li.textContent = child.title;
-
-    const rm = document.createElement('button');
-    rm.textContent = 'x';
-    rm.onclick = e => {
-      e.stopPropagation();
-      n.children.splice(i, 1);
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.value = n.color || '#ffffff';
+    colorInput.onchange = e => {
+      n.color = e.target.value;
       render();
     };
-    li.appendChild(rm);
+    el.appendChild(colorInput);
 
-    list.appendChild(li);
-  });
-  el.appendChild(list);
-}
+    // Add child node button
+    const childBtn = document.createElement('button');
+    childBtn.textContent = '+ Child';
+    childBtn.onclick = e => {
+      e.stopPropagation();
+      n.children.push({
+        id: Date.now().toString(36),
+        x: n.x + 40,
+        y: n.y + 40,
+        title: 'Child Node',
+        color: '#ffffff',
+        expanded: true,
+        connections: [],
+        children: []
+      });
+      render();
+    };
+    el.appendChild(childBtn);
 
-canvas.appendChild(el);
+    // Add examine button
+    const examineBtn = document.createElement('button');
+    examineBtn.textContent = 'Examine';
+    examineBtn.className = n.children.length ? '' : 'hidden';
+    examineBtn.onclick = e => {
+      e.stopPropagation();
+      state.path.push(n.id);
+      render();
+    };
+    el.appendChild(examineBtn);
+
+    // Add expand/collapse toggle
+    const toggleBtn = document.createElement('button');
+    toggleBtn.textContent = n.expanded ? '−' : '+';
+    toggleBtn.className = n.children.length ? '' : 'hidden';
+    toggleBtn.onclick = e => {
+      e.stopPropagation();
+      n.expanded = !n.expanded;
+      render();
+    };
+    el.appendChild(toggleBtn);
+
+    // Show children inline if expanded
+    if (n.expanded && n.children.length) {
+      const list = document.createElement('ul');
+      list.className = 'child-list';
+      n.children.forEach((child, i) => {
+        const li = document.createElement('li');
+        li.textContent = child.title;
+
+        const rm = document.createElement('button');
+        rm.textContent = 'x';
+        rm.onclick = e => {
+          e.stopPropagation();
+          n.children.splice(i, 1);
+          render();
+        };
+        li.appendChild(rm);
+
+        list.appendChild(li);
+      });
+      el.appendChild(list);
+    }
   });
 
   updateBreadcrumb(arr);

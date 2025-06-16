@@ -9,8 +9,10 @@ html,body{margin:0;padding:0;height:100%;font-family:sans-serif}
 
 /* =============== Nodes ================= */
 .node{position:absolute;background:#fff;border:1px solid #ccc;padding:5px;border-radius:5px;box-shadow:2px 2px 4px rgba(0,0,0,.1);cursor:move;min-width:120px}
-.node input[type="text"],.node input[type="color"]{margin-top:4px;width:100%}
-.node button{margin-top:4px;margin-right:2px}
+.node input[type="text"]{margin-top:4px;width:100%}
+.node input[type="color"]{width:30px;height:30px;padding:0;border:none;margin:4px 0;cursor:pointer}
+.node button{margin-top:4px;margin-right:2px;min-width:30px}
+.node button.hidden{display:none}
 
 /* Connector handle for drag-to-connect */
 .handle{

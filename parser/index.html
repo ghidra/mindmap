@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
-	<title>Code Visualizer</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Code Parser</title>
   	<link rel="stylesheet" href="style.css" />
   	<!-- Vis Network CSS -->
 <link
@@ -14,18 +15,97 @@
 <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/standalone/umd/vis-network.min.js"></script>
 
   	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.10.0/acorn.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.8.2/acorn.min.js"></script>
 </head>
 <body>
-	<h1>Code Mind Map</h1>
-	<input type="file" id="zipUpload" accept=".zip" />
-	<button id="analyzeZipBtn">Analyze</button>
-	<div id="classGraph" style="width: 100%; height: 600px;"></div>
-	<div id="mindMap"></div>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+	<div id="controls">
+		<div class="input-group">
+			<h3>Local Directory</h3>
+			<input type="file" id="directoryInput" webkitdirectory directory multiple>
+			<button onclick="parseLocalDirectory()">Parse Directory</button>
+			<p class="note">Select a directory to parse all code files within it.</p>
+		</div>
+
+		<div class="input-group">
+			<h3>GitHub Repository</h3>
+			<input type="text" id="repoUrl" placeholder="https://github.com/username/repo">
+			<input type="text" id="githubToken" placeholder="GitHub Token (optional)" type="password">
+			<button onclick="parseGitHubRepo()">Parse Repository</button>
+			<p class="note">Enter a GitHub repository URL. A token is required for private repos.</p>
+		</div>
+	</div>
+
+	<div id="visualization">
+		<div id="mindmap"></div>
+	</div>
+
 	<script src="parser.js"></script>
 	<script src="visualizer.js"></script>
-	<script src="app.js"></script>
-	
+	<script>
+		async function parseLocalDirectory() {
+			const files = document.getElementById('directoryInput').files;
+			if (files.length === 0) {
+				alert('Please select a directory');
+				return;
+			}
+
+			const filesContent = {};
+			for (const file of files) {
+				if (file.name.endsWith('.js') || file.name.endsWith('.php')) {
+					// Get the full path relative to the selected directory
+					const fullPath = file.webkitRelativePath || file.relativePath || file.name;
+					const content = await file.text();
+					filesContent[fullPath] = content;
+				}
+			}
+
+			const parsedData = parseFiles(filesContent);
+			renderMindMap(parsedData);
+		}
+
+		async function parseGitHubRepo() {
+			const repoUrl = document.getElementById('repoUrl').value;
+			const token = document.getElementById('githubToken').value;
+
+			if (!repoUrl) {
+				alert('Please enter a GitHub repository URL');
+				return;
+			}
+
+			// Extract owner and repo from URL
+			const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+			if (!match) {
+				alert('Invalid GitHub repository URL');
+				return;
+			}
+
+			const [_, owner, repo] = match;
+			const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
+
+			try {
+				const headers = token ? { 'Authorization': `token ${token}` } : {};
+				const response = await fetch(apiUrl, { headers });
+				
+				if (!response.ok) {
+					throw new Error(`GitHub API error: ${response.statusText}`);
+				}
+
+				const files = await response.json();
+				const filesContent = {};
+				
+				for (const file of files) {
+					if (file.name.endsWith('.js') || file.name.endsWith('.php')) {
+						const content = await fetch(file.download_url, { headers }).then(r => r.text());
+						filesContent[file.name] = content;
+					}
+				}
+
+				const parsedData = parseFiles(filesContent);
+				renderMindMap(parsedData);
+			} catch (error) {
+				alert(`Error: ${error.message}`);
+			}
+		}
+	</script>
 </body>
 </html>
