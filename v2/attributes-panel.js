@@ -2,6 +2,14 @@ import { getCurrentNodes } from './state.js';
 import { save } from './state.js';
 import { ATTRIBUTE_TYPES, addAttributeToNode, removeAttributeFromNode, updateAttributeValue } from './attributes.js';
 import { createNode } from './nodes.js';
+import { 
+  getTerminalNode, 
+  isTerminalNode, 
+  getTerminalNodeAttributes, 
+  addTerminalAttribute, 
+  removeTerminalAttribute, 
+  updateTerminalAttributeValue 
+} from './terminal-nodes.js';
 
 const panel = document.getElementById('attributes-panel');
 const attributesList = document.getElementById('attributes-list');
@@ -29,6 +37,7 @@ export function selectNode(nodeId) {
   renderAttributes();
   renderChildren();
   renderColorPicker();
+  renderTerminalNode();
 }
 
 export function refreshAttributesPanel() {
@@ -37,12 +46,14 @@ export function refreshAttributesPanel() {
     renderAttributes();
     renderChildren();
     renderColorPicker();
+    renderTerminalNode();
   }
 }
 
 export function initAttributesPanel(renderCallback) {
   onNodeRender = renderCallback;
   setupAddAttributeForm();
+  setupTerminalAttributeForm();
   hideAttributesPanel();
 }
 
@@ -168,7 +179,10 @@ function renderChildren() {
   childrenHeader.appendChild(addChildBtn);
   childrenSection.appendChild(childrenHeader);
   
-  if (!node.children || node.children.length === 0) {
+  // Filter out terminal nodes from children list
+  const nonTerminalChildren = node.children ? node.children.filter(child => !isTerminalNode(child)) : [];
+  
+  if (nonTerminalChildren.length === 0) {
     const emptyMessage = document.createElement('div');
     emptyMessage.className = 'empty-children';
     emptyMessage.textContent = 'No children nodes.';
@@ -179,7 +193,7 @@ function renderChildren() {
   const childrenList = document.createElement('div');
   childrenList.className = 'children-list';
   
-  node.children.forEach((child, index) => {
+  nonTerminalChildren.forEach((child, index) => {
     const childItem = document.createElement('div');
     childItem.className = 'child-item';
     
@@ -191,10 +205,14 @@ function renderChildren() {
     removeChildBtn.textContent = '×';
     removeChildBtn.className = 'remove-child';
     removeChildBtn.onclick = () => {
-      node.children.splice(index, 1);
-      save();
-      renderChildren();
-      if (onNodeRender) onNodeRender();
+      // Find the actual index in the original children array
+      const actualIndex = node.children.findIndex(c => c.id === child.id);
+      if (actualIndex !== -1) {
+        node.children.splice(actualIndex, 1);
+        save();
+        renderChildren();
+        if (onNodeRender) onNodeRender();
+      }
     };
     
     childItem.appendChild(childName);
@@ -203,6 +221,101 @@ function renderChildren() {
   });
   
   childrenSection.appendChild(childrenList);
+}
+
+function renderTerminalNode() {
+  // Find or create terminal node section
+  let terminalSection = panel.querySelector('.terminal-section');
+  if (!terminalSection) {
+    terminalSection = document.createElement('div');
+    terminalSection.className = 'terminal-section';
+    // Position at the very bottom of the panel
+    panel.appendChild(terminalSection);
+  }
+  
+  // Ensure terminal section is at the very bottom
+  if (terminalSection.parentNode) {
+    terminalSection.parentNode.appendChild(terminalSection);
+  }
+  
+  terminalSection.innerHTML = '';
+  
+  const terminalHeader = document.createElement('div');
+  terminalHeader.className = 'section-header';
+  
+  const terminalLabel = document.createElement('label');
+  terminalLabel.textContent = 'Level Attributes:';
+  terminalLabel.className = 'section-label';
+  terminalLabel.title = 'Attributes that apply to this entire level';
+  
+  const addTerminalAttrBtn = document.createElement('button');
+  addTerminalAttrBtn.textContent = '+ Add Level Attr';
+  addTerminalAttrBtn.className = 'add-terminal-attr-btn';
+  addTerminalAttrBtn.onclick = () => {
+    // Show terminal attribute form
+    const terminalForm = panel.querySelector('#add-terminal-attribute-form');
+    if (terminalForm) {
+      terminalForm.style.display = 'block';
+    }
+  };
+  
+  terminalHeader.appendChild(terminalLabel);
+  terminalHeader.appendChild(addTerminalAttrBtn);
+  terminalSection.appendChild(terminalHeader);
+  
+  const terminalAttributes = getTerminalNodeAttributes();
+  
+  if (!terminalAttributes || terminalAttributes.length === 0) {
+    const emptyMessage = document.createElement('div');
+    emptyMessage.className = 'empty-terminal-attributes';
+    emptyMessage.textContent = 'No level attributes defined.';
+    terminalSection.appendChild(emptyMessage);
+    return;
+  }
+  
+  const terminalList = document.createElement('div');
+  terminalList.className = 'terminal-attributes-list';
+  
+  terminalAttributes.forEach(attribute => {
+    const attrItem = document.createElement('div');
+    attrItem.className = 'terminal-attribute-item';
+    
+    const nameEl = document.createElement('div');
+    nameEl.className = 'attribute-name';
+    nameEl.textContent = attribute.name;
+    
+    const typeEl = document.createElement('div');
+    typeEl.className = 'attribute-type';
+    typeEl.textContent = attribute.type;
+    
+    const valueEl = document.createElement('input');
+    valueEl.className = 'attribute-value';
+    valueEl.type = attribute.type === ATTRIBUTE_TYPES.INTEGER || attribute.type === ATTRIBUTE_TYPES.FLOAT ? 'number' : 'text';
+    valueEl.step = attribute.type === ATTRIBUTE_TYPES.FLOAT ? '0.1' : '1';
+    valueEl.value = attribute.value;
+    valueEl.onchange = e => {
+      updateTerminalAttributeValue(attribute.id, e.target.value);
+      save();
+    };
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-attribute';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = () => {
+      removeTerminalAttribute(attribute.id);
+      save();
+      renderTerminalNode();
+    };
+    
+    attrItem.appendChild(nameEl);
+    attrItem.appendChild(typeEl);
+    attrItem.appendChild(valueEl);
+    attrItem.appendChild(removeBtn);
+    
+    terminalList.appendChild(attrItem);
+  });
+  
+  terminalSection.appendChild(terminalList);
 }
 
 function renderAttributes() {
@@ -294,4 +407,86 @@ function setupAddAttributeForm() {
     renderAttributes();
     if (onNodeRender) onNodeRender();
   };
+}
+
+function setupTerminalAttributeForm() {
+  // Create terminal attribute form
+  const terminalForm = document.createElement('form');
+  terminalForm.id = 'add-terminal-attribute-form';
+  terminalForm.className = 'terminal-attribute-form';
+  terminalForm.style.display = 'none';
+  
+  const formTitle = document.createElement('h4');
+  formTitle.textContent = 'Add Level Attribute';
+  
+  const nameRow = document.createElement('div');
+  nameRow.className = 'form-row';
+  
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'Attribute name';
+  nameInput.required = true;
+  
+  const typeSelect = document.createElement('select');
+  typeSelect.innerHTML = `
+    <option value="string">String</option>
+    <option value="integer">Integer</option>
+    <option value="float">Float</option>
+  `;
+  
+  nameRow.appendChild(nameInput);
+  nameRow.appendChild(typeSelect);
+  
+  const valueRow = document.createElement('div');
+  valueRow.className = 'form-row';
+  
+  const valueInput = document.createElement('input');
+  valueInput.type = 'text';
+  valueInput.placeholder = 'Value';
+  
+  const addBtn = document.createElement('button');
+  addBtn.type = 'submit';
+  addBtn.textContent = 'Add';
+  
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = () => {
+    terminalForm.style.display = 'none';
+    nameInput.value = '';
+    valueInput.value = '';
+    typeSelect.value = 'string';
+  };
+  
+  valueRow.appendChild(valueInput);
+  valueRow.appendChild(addBtn);
+  valueRow.appendChild(cancelBtn);
+  
+  terminalForm.appendChild(formTitle);
+  terminalForm.appendChild(nameRow);
+  terminalForm.appendChild(valueRow);
+  
+  terminalForm.onsubmit = e => {
+    e.preventDefault();
+    
+    const name = nameInput.value.trim();
+    const type = typeSelect.value;
+    const value = valueInput.value;
+    
+    if (!name) return;
+    
+    addTerminalAttribute(name, type, value);
+    save();
+    
+    // Clear form and hide it
+    nameInput.value = '';
+    valueInput.value = '';
+    typeSelect.value = 'string';
+    terminalForm.style.display = 'none';
+    
+    // Re-render terminal node
+    renderTerminalNode();
+  };
+  
+  panel.appendChild(terminalForm);
 } 

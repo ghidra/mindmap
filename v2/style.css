@@ -162,7 +162,29 @@ html,body{margin:0;padding:0;height:100%;font-family:sans-serif}
   background:#218838;
 }
 
+.add-terminal-attr-btn{
+  background:#17a2b8;
+  color:white;
+  border:none;
+  border-radius:3px;
+  padding:4px 8px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.add-terminal-attr-btn:hover{
+  background:#138496;
+}
+
 .empty-children{
+  color:#666;
+  font-style:italic;
+  text-align:center;
+  padding:10px;
+  font-size:12px;
+}
+
+.empty-terminal-attributes{
   color:#666;
   font-style:italic;
   text-align:center;
@@ -209,6 +231,59 @@ html,body{margin:0;padding:0;height:100%;font-family:sans-serif}
 
 .remove-child:hover{
   background:#c82333;
+}
+
+/* Terminal node section */
+.terminal-section{
+  padding:10px;
+  border-bottom:1px solid #eee;
+  background:#f0f8ff;
+}
+
+.terminal-attributes-list{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.terminal-attribute-item{
+  display:grid;
+  grid-template-columns:1fr auto auto auto;
+  gap:6px;
+  align-items:center;
+  padding:6px;
+  border:1px solid #b3d9ff;
+  border-radius:3px;
+  background:#f8fbff;
+  font-size:12px;
+}
+
+.terminal-attribute-item .attribute-name{
+  font-size:12px;
+}
+
+.terminal-attribute-item .attribute-type{
+  font-size:10px;
+  padding:1px 4px;
+}
+
+.terminal-attribute-item .attribute-value{
+  width:60px;
+  font-size:12px;
+  padding:2px 4px;
+}
+
+.terminal-attribute-form{
+  padding:10px;
+  border-top:1px solid #b3d9ff;
+  background:#f0f8ff;
+  margin-top:10px;
+}
+
+.terminal-attribute-form h4{
+  margin:0 0 10px 0;
+  font-size:13px;
+  color:#0066cc;
 }
 
 #attributes-list{
@@ -344,10 +419,64 @@ html,body{margin:0;padding:0;height:100%;font-family:sans-serif}
 }
 
 /* =============== Nodes ================= */
-.node{position:absolute;background:#fff;border:1px solid #ccc;padding:5px;border-radius:5px;box-shadow:2px 2px 4px rgba(0,0,0,.1);cursor:move;min-width:120px}
-.node input[type="text"]{margin-top:4px;width:100%}
+.node{position:absolute;background:#fff;border:1px solid #ccc;padding:5px;border-radius:5px;box-shadow:2px 2px 4px rgba(0,0,0,.1);cursor:move;min-width:120px;padding-right:30px}
+.node input[type="text"]{margin-top:4px;width:calc(100% - 10px)}
 .node button{margin-top:4px;margin-right:2px;min-width:30px}
 .node button.hidden{display:none}
+
+/* Terminal node styling */
+.terminal-node{
+  border:2px solid #17a2b8;
+  background:#e3f2fd;
+  box-shadow:2px 2px 8px rgba(23,162,184,.3);
+}
+
+.terminal-title{
+  background:#f8fbff;
+  border:1px solid #b3d9ff;
+  color:#0066cc;
+  font-weight:bold;
+  cursor:default;
+}
+
+.terminal-title:focus{
+  outline:none;
+  border-color:#17a2b8;
+  box-shadow:0 0 0 2px rgba(23,162,184,.25);
+}
+
+.terminal-attr-toggle{
+  background:#17a2b8;
+  color:white;
+}
+
+.terminal-attr-toggle:hover{
+  background:#138496;
+}
+
+.terminal-attributes-list{
+  border-left:2px solid #17a2b8;
+  background:#f0f8ff;
+}
+
+.terminal-node-attribute-item{
+  background:#f8fbff;
+  border:1px solid #b3d9ff;
+}
+
+.terminal-node-attribute-item .attr-name{
+  color:#0066cc;
+  font-weight:bold;
+}
+
+.terminal-node-attribute-item .attr-value{
+  border-color:#b3d9ff;
+}
+
+.terminal-node-attribute-item .attr-value:focus{
+  border-color:#17a2b8;
+  box-shadow:0 0 0 1px rgba(23,162,184,.25);
+}
 
 /* Attributes toggle button */
 .node button.attr-toggle{
@@ -355,15 +484,60 @@ html,body{margin:0;padding:0;height:100%;font-family:sans-serif}
   color:white;
   border:none;
   border-radius:3px;
-  font-weight:bold;
-  min-width:24px;
-  height:24px;
-  padding:0;
+  padding:2px 6px;
+  font-size:12px;
   cursor:pointer;
+  margin-left:2px;
 }
 
 .node button.attr-toggle:hover{
   background:#0056b3;
+}
+
+/* Toggle children button - match attributes toggle styling */
+.node button:not(.delete-btn):not(.attr-toggle){
+  background:#6c757d;
+  color:white;
+  border:none;
+  border-radius:3px;
+  padding:2px 6px;
+  font-size:12px;
+  cursor:pointer;
+  margin-left:2px;
+}
+
+.node button:not(.delete-btn):not(.attr-toggle):hover{
+  background:#5a6268;
+}
+
+.node button.delete-btn{
+  background:#dc3545;
+  color:white;
+  border:none;
+  border-radius:3px;
+  padding:2px 6px;
+  font-size:12px;
+  cursor:pointer;
+  margin-left:2px;
+  position:absolute;
+  top:2px;
+  right:2px;
+  width:20px;
+  height:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0.7;
+  z-index:10;
+}
+
+.node button.delete-btn:hover{
+  background:#c82333;
+  opacity:1;
+}
+
+.node button.delete-btn:active{
+  transform:scale(0.95);
 }
 
 /* Inline attributes list */
