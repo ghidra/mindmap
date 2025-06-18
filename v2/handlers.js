@@ -1,5 +1,8 @@
-//import { state, save } from './core.js';
-//import { render } from './render.js';
+import { state, save, getCurrentNodes } from './state.js';
+import { render } from './render.js';
+import { renderConnections, addConnection } from './connections.js';
+import { createNode } from './nodes.js';
+import { selectNode } from './attributes-panel.js';
 
 let draggingNode = null;
 window.draggingFromId = null;
@@ -18,19 +21,10 @@ function wireEvents() {
   canvas.addEventListener('click', e => {
     if (e.target !== canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const arr = state.path.reduce((a, id) => a.find(n => n.id === id)?.children ?? a, state.nodes);
+    const nodes = getCurrentNodes();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    arr.push({
-      id: Date.now().toString(36),
-      x,
-      y,
-      title: 'New Node',
-      color: '#ffffff',
-      expanded: true,
-      connections: [],
-      children: []
-    });
+    nodes.push(createNode(x, y));
     save();
     render();
   });
@@ -55,16 +49,19 @@ function wireEvents() {
       return;
     }
     
-    // Handle node dragging
+    // Handle node selection and dragging
     if (target && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
-      const arr = state.path.reduce((a, id) => a.find(n => n.id === id)?.children ?? a, state.nodes);
-      draggingNode = arr.find(n => n.id === target.dataset.id);
+      const nodes = getCurrentNodes();
+      draggingNode = nodes.find(n => n.id === target.dataset.id);
       
       if (draggingNode) {
+        // Select the node for attributes panel
+        selectNode(draggingNode.id);
+        
         offsetX = x - draggingNode.x;
         offsetY = y - draggingNode.y;
         document.body.style.userSelect = 'none';
@@ -78,7 +75,7 @@ function wireEvents() {
     window.mouseY = e.clientY;
 
     if (window.draggingFromId) {
-      render();
+      renderConnections();
       return;
     }
 
@@ -100,14 +97,11 @@ function wireEvents() {
 
       if (e.target.closest('.node')) {
         const toId = e.target.closest('.node').dataset.id;
-        const arr = state.path.reduce((a, id) => a.find(n => n.id === id)?.children ?? a, state.nodes);
-        const fromNode = arr.find(n => n.id === wasDragging);
-        if (fromNode && fromNode.id !== toId && !fromNode.connections.includes(toId)) {
-          fromNode.connections.push(toId);
+        if (addConnection(wasDragging, toId)) {
           save();
         }
       }
-      render();
+      renderConnections();
     }
     
     if (draggingNode) {
@@ -132,3 +126,5 @@ function wireEvents() {
     fr.readAsText(file);
   };
 }
+
+export { wireEvents };
