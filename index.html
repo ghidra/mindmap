@@ -1,53 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mind Map Tool</title>
     <link rel="stylesheet" href="v2/style.css" />
-  </head>
-  <body>
-    <!-- ‼️ Top‑bar controls -->
-    <div id="controls">
-      <button id="clearBtn">Clear Map</button>
-      <button id="exportBtn">Export Map</button>
-      <input type="file" id="importInput" />
-      <!-- Breadcrumb trail will be populated here by JS → keeps it *below* the buttons -->
-      <span id="breadcrumb"></span>
-    </div>
+</head>
+<body>
+<!-- ‼️ Top‑bar controls -->
+<div id="controls">
+    <button id="loadCodeBtn">Load Code</button>
+    <input type="file" id="codeFileInput" webkitdirectory multiple style="display: none;" />
+    <button id="clearBtn">Clear Map</button>
+    <button id="exportBtn">Export Map</button>
+    <input type="file" id="importInput" />
+    <!-- Breadcrumb trail will be populated here by JS → keeps it *below* the buttons -->
+    <span id="breadcrumb"></span>
+</div>
 
-    <!-- Main content area -->
-    <div id="main-content">
-      <!-- Main drawing surface -->
-      <div id="canvas"></div>
-      <svg id="connections"></svg>
-      
-      <!-- Attributes panel -->
-      <div id="attributes-panel">
+<!-- Main content area -->
+<div id="main-content">
+    <!-- Main drawing surface -->
+    <div id="canvas"></div>
+    <svg id="connections"></svg>
+
+    <!-- Attributes panel -->
+    <div id="attributes-panel">
         <div class="panel-header">
-          <button id="close-attributes" class="close-btn">×</button>
+            <button id="close-attributes" class="close-btn">×</button>
         </div>
-        
-        <div id="attributes-list"></div>
-        
-        <form id="add-attribute-form">
-          <h4>Add New Attribute</h4>
-          <div class="form-row">
-            <input type="text" id="attribute-name" placeholder="Attribute name" required />
-            <select id="attribute-type">
-              <option value="string">String</option>
-              <option value="integer">Integer</option>
-              <option value="float">Float</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <input type="text" id="attribute-value" placeholder="Value" />
-            <button type="submit">Add</button>
-          </div>
-        </form>
-      </div>
-    </div>
 
-    <script type="module" src="v2/main.js"></script>
-  </body>
+        <div id="attributes-list"></div>
+
+        <form id="add-attribute-form">
+            <h4>Add New Attribute</h4>
+            <div class="form-row">
+                <input type="text" id="attribute-name" placeholder="Attribute name" required />
+                <select id="attribute-type">
+                    <option value="string">String</option>
+                    <option value="integer">Integer</option>
+                    <option value="float">Float</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <input type="text" id="attribute-value" placeholder="Value" />
+                <button type="submit">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="module" src="v2/main.js"></script>
+</body>
 </html>

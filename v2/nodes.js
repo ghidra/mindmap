@@ -85,6 +85,10 @@ export function renderNodes(onRender, onSelectNode) {
     handle.dataset.nodeId = n.id;
     el.appendChild(handle);
 
+    // Add draggable header
+    const header = document.createElement('div');
+    header.className = 'node-header';
+
     // Add title input (read-only for terminal nodes)
     const input = document.createElement('input');
     input.name = 'title_' + n.id;
@@ -94,7 +98,12 @@ export function renderNodes(onRender, onSelectNode) {
     if (!isTerminalNode(n)) {
       input.oninput = e => { n.title = e.target.value; save(); };
     }
-    el.appendChild(input);
+    header.appendChild(input);
+    el.appendChild(header);
+
+    // Add body container for buttons and content
+    const body = document.createElement('div');
+    body.className = 'node-body';
 
     // Add delete button (hidden for terminal nodes)
     if (!isTerminalNode(n)) {
@@ -109,20 +118,34 @@ export function renderNodes(onRender, onSelectNode) {
           onRender();
         }
       };
-      el.appendChild(deleteBtn);
+      body.appendChild(deleteBtn);
     }
 
     // Add examine button (hidden for terminal nodes)
     if (!isTerminalNode(n)) {
       const examineBtn = document.createElement('button');
       examineBtn.textContent = 'Examine';
-      examineBtn.className = n.children.length ? '' : 'hidden';
-      examineBtn.onclick = e => {
+      examineBtn.className = n.children.length || n.fileObject ? '' : 'hidden';
+      examineBtn.onclick = async (e) => {
         e.stopPropagation();
-        state.path.push(n.id);
-        onRender();
+
+        // If this is a file node that hasn't been parsed yet
+        if (n.fileObject && n.type === 'file' && !(n.metadata && n.metadata.parsed)) {
+          const { parserIntegration } = await import('./ParserIntegrationModule.js');
+          try {
+            await parserIntegration.examineFile(n);
+            onRender();
+          } catch (error) {
+            console.error('Error examining file:', error);
+            alert('Error parsing file: ' + error.message);
+          }
+        } else {
+          // Normal examine behavior for directories
+          state.path.push(n.id);
+          onRender();
+        }
       };
-      el.appendChild(examineBtn);
+      body.appendChild(examineBtn);
     }
 
     // Add expand/collapse toggle for children (hidden for terminal nodes)
@@ -135,7 +158,7 @@ export function renderNodes(onRender, onSelectNode) {
         n.expanded = !n.expanded;
         onRender();
       };
-      el.appendChild(toggleBtn);
+      body.appendChild(toggleBtn);
     }
 
     // Add attributes toggle button
@@ -148,7 +171,7 @@ export function renderNodes(onRender, onSelectNode) {
       n.attributesExpanded = !n.attributesExpanded;
       onRender();
     };
-    el.appendChild(attrToggleBtn);
+    body.appendChild(attrToggleBtn);
 
     // Show children inline if expanded (only for non-terminal nodes)
     if (!isTerminalNode(n) && n.expanded && n.children.length) {
@@ -177,7 +200,7 @@ export function renderNodes(onRender, onSelectNode) {
 
         list.appendChild(li);
       });
-      el.appendChild(list);
+      body.appendChild(list);
     }
 
     // Show attributes inline if expanded
@@ -227,8 +250,11 @@ export function renderNodes(onRender, onSelectNode) {
         attrItem.appendChild(removeBtn);
         attrList.appendChild(attrItem);
       });
-      el.appendChild(attrList);
+      body.appendChild(attrList);
     }
+
+    // Append body to node
+    el.appendChild(body);
 
     canvas.appendChild(el);
   });

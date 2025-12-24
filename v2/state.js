@@ -5,7 +5,16 @@ export const state = {
 };
 
 export function save() {
-  localStorage.setItem('mindmap', JSON.stringify(state.nodes));
+  // Custom replacer to exclude non-serializable properties
+  const replacer = (key, value) => {
+    // Exclude fileObject (File object can't be serialized)
+    // Exclude parent (creates circular reference, use parentId instead)
+    if (key === 'fileObject' || key === 'parent') {
+      return undefined;
+    }
+    return value;
+  };
+  localStorage.setItem('mindmap', JSON.stringify(state.nodes, replacer));
 }
 
 export function load() {

@@ -4,6 +4,7 @@ import { renderConnections, addConnection } from './connections.js';
 import { createNode } from './nodes.js';
 import { selectNode } from './attributes-panel.js';
 import { ensureTerminalNode } from './terminal-nodes.js';
+import { parserIntegration } from './ParserIntegrationModule.js';
 
 let draggingNode = null;
 window.draggingFromId = null;
@@ -52,7 +53,7 @@ function wireEvents() {
   // Handle both node dragging and connection dragging
   canvas.addEventListener('mousedown', e => {
     const target = e.target.closest('.node');
-    
+
     // Handle connection dragging
     if (e.target.classList.contains('handle')) {
       window.draggingFromId = e.target.dataset.nodeId;
@@ -61,22 +62,27 @@ function wireEvents() {
       e.stopPropagation();
       return;
     }
-    
+
     // Handle node selection and dragging
-    if (target && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+    // Drag if clicking on header OR node background (but not buttons/inputs/handles)
+    const isHeader = e.target.classList.contains('node-header') || e.target.closest('.node-header');
+    const isBackground = target && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.classList.contains('handle');
+
+    if (target && (isHeader || isBackground)) {
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
       const nodes = getCurrentNodes();
       draggingNode = nodes.find(n => n.id === target.dataset.id);
-      
+
       if (draggingNode) {
         // Select the node for attributes panel
         selectNode(draggingNode.id);
-        
-        offsetX = x - draggingNode.x;
-        offsetY = y - draggingNode.y;
+
+        // Calculate offset from mouse to node position
+        offsetX = mouseX - draggingNode.x;
+        offsetY = mouseY - draggingNode.y;
         document.body.style.userSelect = 'none';
         e.preventDefault();
       }
@@ -100,8 +106,10 @@ function wireEvents() {
   });
 
   document.addEventListener('mouseup', e => {
+    // Always restore text selection
     document.body.style.userSelect = '';
-    
+
+    // Handle connection dragging end
     if (window.draggingFromId) {
       const wasDragging = window.draggingFromId;
       window.draggingFromId = null;
@@ -116,15 +124,19 @@ function wireEvents() {
         }
       }
       renderConnections();
-      
+
       // Prevent the canvas click event from firing when connection dragging ends
       e.preventDefault();
       e.stopPropagation();
+      return;
     }
-    
+
+    // Handle node dragging end
     if (draggingNode) {
       save();
       draggingNode = null;
+      offsetX = 0;
+      offsetY = 0;
     }
   });
 
@@ -142,6 +154,26 @@ function wireEvents() {
       }
     };
     fr.readAsText(file);
+  };
+
+  // Load Code button
+  const loadCodeBtn = document.getElementById('loadCodeBtn');
+  const codeFileInput = document.getElementById('codeFileInput');
+
+  loadCodeBtn.onclick = () => {
+    codeFileInput.click();
+  };
+
+  codeFileInput.onchange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    try {
+      await parserIntegration.loadFromDirectory(files);
+    } catch (error) {
+      console.error('Error loading directory:', error);
+      alert('Error loading directory: ' + error.message);
+    }
   };
 }
 

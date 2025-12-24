@@ -15,13 +15,13 @@ function debugHandlePosition(handle, nodeId) {
   const nodeEl = canvas.querySelector(`[data-id="${nodeId}"]`);
   const nodeRect = nodeEl ? nodeEl.getBoundingClientRect() : null;
   
-  console.log('Debug handle position for node', nodeId, ':', {
+  /*console.log('Debug handle position for node', nodeId, ':', {
     handleRect: { left: handleRect.left, top: handleRect.top, width: handleRect.width, height: handleRect.height },
     canvasRect: { left: canvasRect.left, top: canvasRect.top },
     nodeRect: nodeRect ? { left: nodeRect.left, top: nodeRect.top, width: nodeRect.width, height: nodeRect.height } : null,
     handleComputedStyle: window.getComputedStyle(handle),
     nodeComputedStyle: nodeEl ? window.getComputedStyle(nodeEl) : null
-  });
+  });*/
 }
 
 export function calculateHandlePositions() {
@@ -39,12 +39,12 @@ export function calculateHandlePositions() {
         n.handleX = handleRect.left - canvasRect.left + handleRect.width / 2;
         n.handleY = handleRect.top - canvasRect.top + handleRect.height / 2;
         
-        console.log('Calculated handle position for node', n.id, ':', { 
+        /*console.log('Calculated handle position for node', n.id, ':', { 
           handleX: n.handleX, 
           handleY: n.handleY,
           nodeX: n.x, 
           nodeY: n.y
-        });
+        });*/
       }
     }
   });
