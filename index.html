@@ -14,6 +14,25 @@
     <button id="clearBtn">Clear Map</button>
     <button id="exportBtn">Export Map</button>
     <input type="file" id="importInput" />
+    <button id="darkModeToggle" title="Toggle Dark Mode">🌙</button>
+
+    <!-- Mode tabs -->
+    <div id="mode-tabs" class="mode-tabs">
+        <button id="hierarchical-tab" class="mode-tab active">Hierarchical</button>
+        <button id="flow-tab" class="mode-tab">Flow Mode</button>
+        <button id="notes-tab" class="mode-tab">Notes</button>
+    </div>
+
+    <!-- Flow mode controls (hidden by default) -->
+    <div id="flow-controls" class="flow-controls" style="display: none;">
+        <label>Layout:</label>
+        <select id="flow-layout-select">
+            <option value="top-down">Top-Down</option>
+            <option value="left-right">Left-Right</option>
+        </select>
+        <button id="refresh-flow-btn">Refresh Flow</button>
+    </div>
+
     <!-- Breadcrumb trail will be populated here by JS → keeps it *below* the buttons -->
     <span id="breadcrumb"></span>
 </div>

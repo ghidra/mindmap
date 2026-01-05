@@ -89,7 +89,8 @@ export class DirectoryStructureBuilder {
     }
 
     // Only include supported file types
-    const supportedExtensions = ['.js', '.ts', '.jsx', '.tsx'];
+    // HTML files included for entry point detection
+    const supportedExtensions = ['.html', '.js', '.ts', '.jsx', '.tsx'];
     return supportedExtensions.some(ext => path.endsWith(ext));
   }
 }

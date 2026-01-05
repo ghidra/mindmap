@@ -1,22 +1,31 @@
-import { state, save, getCurrentNodes } from './state.js';
+import { state, save, getCurrentNodes, saveNotes } from './state.js';
 import { ATTRIBUTE_TYPES, updateAttributeValue, removeAttributeFromNode } from './attributes.js';
 import { refreshAttributesPanel } from './attributes-panel.js';
 import { isTerminalNode, updateTerminalAttributeValue, removeTerminalAttribute } from './terminal-nodes.js';
 
 const canvas = document.getElementById('canvas');
 
-export function createNode(x, y, title = 'New Node') {
+export function createNode(x, y, title = 'New Node', type = 'file') {
   return {
     id: Date.now().toString(36),
+    type, // Node type: 'file', 'class', 'function', 'note'
     x,
     y,
+    flowX: x, // Flow mode X position
+    flowY: y, // Flow mode Y position
     title,
     color: '#ffffff',
     expanded: true,
     attributesExpanded: false,
     connections: [],
     children: [],
-    attributes: []
+    attributes: [],
+    flowMetadata: {
+      depth: 0,
+      executionOrder: 0,
+      globalVariables: [],
+      classMembersMap: {}
+    }
   };
 }
 
@@ -62,28 +71,111 @@ export function deleteNode(nodeId) {
 
 export function renderNodes(onRender, onSelectNode) {
   const nodes = getCurrentNodes();
-  
+
   canvas.innerHTML = '';
 
   nodes.forEach(n => {
     const el = document.createElement('div');
     el.dataset.id = n.id;
     el.className = 'node';
-    
+
+    // Add note-specific class
+    if (n.isNote || state.currentMode === 'notes') {
+      el.classList.add('note-node');
+    }
+
     // Add special styling for terminal nodes
     if (isTerminalNode(n)) {
       el.classList.add('terminal-node');
     }
-    
-    el.style.left = n.x + 'px';
-    el.style.top = n.y + 'px';
-    el.style.backgroundColor = n.color || '#ffffff';
 
-    // Add drag-to-connect handle
+    // Add flow mode styling
+    if (state.currentMode === 'flow') {
+      el.classList.add('flow-mode');
+
+      // Highlight entry point
+      if (state.flowConfig.entryPoint === n.id) {
+        el.classList.add('flow-entry-point');
+      }
+
+      // Add styling for synthetic structure nodes
+      if (n.syntheticNode) {
+        el.classList.add('synthetic-node');
+        if (n.type === 'class') {
+          el.classList.add('synthetic-class');
+        } else if (n.type === 'method') {
+          el.classList.add('synthetic-method');
+        } else if (n.type === 'function') {
+          el.classList.add('synthetic-function');
+        }
+      }
+    }
+
+    // Use appropriate position based on mode
+    const posX = state.currentMode === 'flow' ? (n.flowX || n.x) : n.x;
+    const posY = state.currentMode === 'flow' ? (n.flowY || n.y) : n.y;
+
+    // Apply pan offset
+    el.style.left = (posX + state.panX) + 'px';
+    el.style.top = (posY + state.panY) + 'px';
+
+    // Apply custom size for note nodes
+    if (n.isNote || state.currentMode === 'notes') {
+      if (n.width) el.style.width = n.width + 'px';
+      if (n.height) el.style.height = n.height + 'px';
+      if (n.fontSize) el.style.fontSize = n.fontSize + 'px';
+    }
+
+    // Adjust node height based on number of input ports (attributes)
+    if (n.attributes && n.attributes.length > 0) {
+      // Calculate min height needed for all ports
+      // Header: 40px, First port starts at 30px, Each port needs 25px spacing, Bottom padding: 20px
+      const minHeight = Math.max(120, 30 + (n.attributes.length * 25) + 20);
+      el.style.minHeight = minHeight + 'px';
+    }
+
+    // Only apply custom background color if it's not the default white
+    // This allows CSS dark mode styles to take effect
+    if (n.color && n.color !== '#ffffff') {
+      el.style.backgroundColor = n.color;
+    }
+
+    // Add output port (drag-to-connect handle) - right side, center
     const handle = document.createElement('span');
-    handle.className = 'handle';
+    handle.className = 'handle output-port';
     handle.dataset.nodeId = n.id;
+    handle.title = 'Output Port - Drag to connect';
     el.appendChild(handle);
+
+    // Add input ports for attributes - left side, stacked
+    if (n.attributes && n.attributes.length > 0) {
+      const inputPortsContainer = document.createElement('div');
+      inputPortsContainer.className = 'input-ports-container';
+
+      n.attributes.forEach((attr, index) => {
+        const inputPort = document.createElement('span');
+        inputPort.className = 'input-port';
+        inputPort.dataset.nodeId = n.id;
+        inputPort.dataset.attributeId = attr.id;
+        inputPort.title = `Input: ${attr.name}`;
+        inputPort.style.top = `${30 + (index * 25)}px`; // Stack vertically, starting below header
+        inputPortsContainer.appendChild(inputPort);
+      });
+
+      el.appendChild(inputPortsContainer);
+    }
+
+    // Add 4-sided ports for note nodes
+    if (n.type === 'note' || n.isNote) {
+      ['top', 'right', 'bottom', 'left'].forEach(side => {
+        const port = document.createElement('span');
+        port.className = `note-port note-port-${side}`;
+        port.dataset.nodeId = n.id;
+        port.dataset.side = side;
+        port.title = `Connection Port (${side})`;
+        el.appendChild(port);
+      });
+    }
 
     // Add draggable header
     const header = document.createElement('div');
@@ -95,11 +187,75 @@ export function renderNodes(onRender, onSelectNode) {
     input.value = n.title;
     input.readOnly = isTerminalNode(n); // Terminal nodes can't be renamed
     input.className = isTerminalNode(n) ? 'terminal-title' : '';
+
+    // Apply note-specific title styling
+    if (n.isNote || state.currentMode === 'notes') {
+      if (n.titleFontSize) input.style.fontSize = n.titleFontSize + 'px';
+      if (n.titleColor) input.style.color = n.titleColor;
+    }
+
     if (!isTerminalNode(n)) {
-      input.oninput = e => { n.title = e.target.value; save(); };
+      input.oninput = e => {
+        n.title = e.target.value;
+      };
+
+      // Save when leaving the input field or pressing Enter
+      input.onblur = () => {
+        if (n.isNote || state.currentMode === 'notes') {
+          console.log('Note title saved:', n.id, n.title);
+          saveNotes();
+        } else {
+          save();
+        }
+      };
+
+      input.onkeydown = e => {
+        if (e.key === 'Enter') {
+          e.target.blur(); // Trigger blur to save
+        }
+      };
     }
     header.appendChild(input);
     el.appendChild(header);
+
+    // Add description field for note nodes (only if enabled)
+    if ((n.isNote || state.currentMode === 'notes') && n.showDescription) {
+      const descArea = document.createElement('textarea');
+      descArea.className = 'note-description';
+      descArea.placeholder = 'Add notes here...';
+      descArea.value = n.description || '';
+
+      // Apply description styling
+      if (n.descriptionFontSize) descArea.style.fontSize = n.descriptionFontSize + 'px';
+      if (n.descriptionColor) descArea.style.color = n.descriptionColor;
+
+      descArea.oninput = (e) => {
+        n.description = e.target.value;
+      };
+
+      // Save when leaving the textarea or pressing Ctrl+Enter
+      descArea.onblur = () => {
+        console.log('Note description saved:', n.id, n.description.substring(0, 50));
+        saveNotes();
+      };
+
+      descArea.onkeydown = (e) => {
+        // Ctrl+Enter or Cmd+Enter to save and blur
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.target.blur();
+        }
+      };
+
+      el.appendChild(descArea);
+    }
+
+    // Add resize handle for note nodes
+    if (n.isNote || state.currentMode === 'notes') {
+      const resizeHandle = document.createElement('div');
+      resizeHandle.className = 'resize-handle';
+      resizeHandle.title = 'Drag to resize';
+      el.appendChild(resizeHandle);
+    }
 
     // Add body container for buttons and content
     const body = document.createElement('div');
@@ -125,11 +281,19 @@ export function renderNodes(onRender, onSelectNode) {
     if (!isTerminalNode(n)) {
       const examineBtn = document.createElement('button');
       examineBtn.textContent = 'Examine';
-      examineBtn.className = n.children.length || n.fileObject ? '' : 'hidden';
+      examineBtn.className = (n.children && n.children.length) || n.fileObject ? '' : 'hidden';
       examineBtn.onclick = async (e) => {
         e.stopPropagation();
 
-        // If this is a file node that hasn't been parsed yet
+        // In flow mode, if the node has children, just navigate to them
+        // Don't re-parse because FlowAnalyzer already created the structure
+        if (state.currentMode === 'flow' && n.children && n.children.length > 0) {
+          state.path.push(n.id);
+          onRender();
+          return;
+        }
+
+        // If this is a file node that hasn't been parsed yet (hierarchical mode)
         if (n.fileObject && n.type === 'file' && !(n.metadata && n.metadata.parsed)) {
           const { parserIntegration } = await import('./ParserIntegrationModule.js');
           try {
@@ -152,7 +316,7 @@ export function renderNodes(onRender, onSelectNode) {
     if (!isTerminalNode(n)) {
       const toggleBtn = document.createElement('button');
       toggleBtn.textContent = n.expanded ? '−' : '+';
-      toggleBtn.className = n.children.length ? '' : 'hidden';
+      toggleBtn.className = (n.children && n.children.length) ? '' : 'hidden';
       toggleBtn.onclick = e => {
         e.stopPropagation();
         n.expanded = !n.expanded;
@@ -174,7 +338,7 @@ export function renderNodes(onRender, onSelectNode) {
     body.appendChild(attrToggleBtn);
 
     // Show children inline if expanded (only for non-terminal nodes)
-    if (!isTerminalNode(n) && n.expanded && n.children.length) {
+    if (!isTerminalNode(n) && n.expanded && n.children && n.children.length) {
       const list = document.createElement('ul');
       list.className = 'child-list';
       

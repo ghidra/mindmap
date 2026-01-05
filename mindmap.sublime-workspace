@@ -1,0 +1,418 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"createSha",
+				"createShadowMeshBuffer"
+			],
+			[
+				"f",
+				"Float32Array"
+			],
+			[
+				"shadow",
+				"shadowTexSqrt"
+			],
+			[
+				"shadowTex",
+				"shadowTexSqrt"
+			],
+			[
+				"to_s",
+				"to_screen_position"
+			],
+			[
+				"update",
+				"updateDirection"
+			],
+			[
+				"up",
+				"updateProjection"
+			],
+			[
+				"ve",
+				"vector2"
+			],
+			[
+				"cre",
+				"createShadowMesh"
+			],
+			[
+				"or",
+				"orthoMat4"
+			],
+			[
+				"vSp",
+				"vSpritePos"
+			],
+			[
+				"gl",
+				"gl_PointCoord"
+			],
+			[
+				"li",
+				"lights"
+			],
+			[
+				"ed",
+				"isEdge"
+			],
+			[
+				"road",
+				"roadNetwork"
+			],
+			[
+				"spri",
+				"spriteBuffer"
+			],
+			[
+				"vector",
+				"vector3"
+			],
+			[
+				"chun",
+				"chunkX"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "v2/connections.js",
+			"settings":
+			{
+				"buffer_size": 7742,
+				"line_ending": "Unix"
+			},
+			"undo_stack":
+			[
+				[
+					3,
+					1,
+					"insert",
+					{
+						"characters": "/*"
+					},
+					"AgAAAGoCAAAAAAAAawIAAAAAAAAAAAAAawIAAAAAAABsAgAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAagIAAAAAAABqAgAAAAAAAAAAAAAAAPC/"
+				],
+				[
+					8,
+					1,
+					"insert",
+					{
+						"characters": "*/"
+					},
+					"AgAAAF8EAAAAAAAAYAQAAAAAAAAAAAAAYAQAAAAAAABhBAAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAXwQAAAAAAABfBAAAAAAAAAAAAAAAAPC/"
+				],
+				[
+					11,
+					1,
+					"insert",
+					{
+						"characters": "/*"
+					},
+					"AgAAAMEGAAAAAAAAwgYAAAAAAAAAAAAAwgYAAAAAAADDBgAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAwQYAAAAAAADBBgAAAAAAAAAAAAAAAPC/"
+				],
+				[
+					14,
+					1,
+					"insert",
+					{
+						"characters": "*/"
+					},
+					"AgAAAHgHAAAAAAAAeQcAAAAAAAAAAAAAeQcAAAAAAAB6BwAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAeAcAAAAAAAB4BwAAAAAAAAAAAAAAAPC/"
+				],
+				[
+					15,
+					1,
+					"revert",
+					null,
+					"AgAAAAAAAAAAAAAAAAAAAAAAAACAEgAAaW1wb3J0IHsgZ2V0Q3VycmVudE5vZGVzIH0gZnJvbSAnLi9zdGF0ZS5qcyc7CmltcG9ydCB7IGlzVGVybWluYWxOb2RlIH0gZnJvbSAnLi90ZXJtaW5hbC1ub2Rlcy5qcyc7Cgpjb25zdCBjYW52YXMgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY2FudmFzJyk7CmNvbnN0IHN2ZyA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjb25uZWN0aW9ucycpOwoKLy8gR2xvYmFsIHN0YXRlIGZvciBjb25uZWN0aW9uIGRyYWdnaW5nCndpbmRvdy5kcmFnZ2luZ0Zyb21JZCA9IG51bGw7CndpbmRvdy5tb3VzZVggPSB1bmRlZmluZWQ7CndpbmRvdy5tb3VzZVkgPSB1bmRlZmluZWQ7CgpmdW5jdGlvbiBkZWJ1Z0hhbmRsZVBvc2l0aW9uKGhhbmRsZSwgbm9kZUlkKSB7CiAgY29uc3QgaGFuZGxlUmVjdCA9IGhhbmRsZS5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKTsKICBjb25zdCBjYW52YXNSZWN0ID0gY2FudmFzLmdldEJvdW5kaW5nQ2xpZW50UmVjdCgpOwogIGNvbnN0IG5vZGVFbCA9IGNhbnZhcy5xdWVyeVNlbGVjdG9yKGBbZGF0YS1pZD0iJHtub2RlSWR9Il1gKTsKICBjb25zdCBub2RlUmVjdCA9IG5vZGVFbCA/IG5vZGVFbC5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKSA6IG51bGw7CiAgCiAgLypjb25zb2xlLmxvZygnRGVidWcgaGFuZGxlIHBvc2l0aW9uIGZvciBub2RlJywgbm9kZUlkLCAnOicsIHsKICAgIGhhbmRsZVJlY3Q6IHsgbGVmdDogaGFuZGxlUmVjdC5sZWZ0LCB0b3A6IGhhbmRsZVJlY3QudG9wLCB3aWR0aDogaGFuZGxlUmVjdC53aWR0aCwgaGVpZ2h0OiBoYW5kbGVSZWN0LmhlaWdodCB9LAogICAgY2FudmFzUmVjdDogeyBsZWZ0OiBjYW52YXNSZWN0LmxlZnQsIHRvcDogY2FudmFzUmVjdC50b3AgfSwKICAgIG5vZGVSZWN0OiBub2RlUmVjdCA/IHsgbGVmdDogbm9kZVJlY3QubGVmdCwgdG9wOiBub2RlUmVjdC50b3AsIHdpZHRoOiBub2RlUmVjdC53aWR0aCwgaGVpZ2h0OiBub2RlUmVjdC5oZWlnaHQgfSA6IG51bGwsCiAgICBoYW5kbGVDb21wdXRlZFN0eWxlOiB3aW5kb3cuZ2V0Q29tcHV0ZWRTdHlsZShoYW5kbGUpLAogICAgbm9kZUNvbXB1dGVkU3R5bGU6IG5vZGVFbCA/IHdpbmRvdy5nZXRDb21wdXRlZFN0eWxlKG5vZGVFbCkgOiBudWxsCiAgfSk7Ki8KfQoKZXhwb3J0IGZ1bmN0aW9uIGNhbGN1bGF0ZUhhbmRsZVBvc2l0aW9ucygpIHsKICBjb25zdCBub2RlcyA9IGdldEN1cnJlbnROb2RlcygpOwogIAogIG5vZGVzLmZvckVhY2gobiA9PiB7CiAgICBjb25zdCBub2RlRWwgPSBjYW52YXMucXVlcnlTZWxlY3RvcihgW2RhdGEtaWQ9IiR7bi5pZH0iXWApOwogICAgaWYgKG5vZGVFbCkgewogICAgICBjb25zdCBoYW5kbGUgPSBub2RlRWwucXVlcnlTZWxlY3RvcignLmhhbmRsZScpOwogICAgICBpZiAoaGFuZGxlKSB7CiAgICAgICAgZGVidWdIYW5kbGVQb3NpdGlvbihoYW5kbGUsIG4uaWQpOwogICAgICAgIAogICAgICAgIGNvbnN0IGhhbmRsZVJlY3QgPSBoYW5kbGUuZ2V0Qm91bmRpbmdDbGllbnRSZWN0KCk7CiAgICAgICAgY29uc3QgY2FudmFzUmVjdCA9IGNhbnZhcy5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKTsKICAgICAgICBuLmhhbmRsZVggPSBoYW5kbGVSZWN0LmxlZnQgLSBjYW52YXNSZWN0LmxlZnQgKyBoYW5kbGVSZWN0LndpZHRoIC8gMjsKICAgICAgICBuLmhhbmRsZVkgPSBoYW5kbGVSZWN0LnRvcCAtIGNhbnZhc1JlY3QudG9wICsgaGFuZGxlUmVjdC5oZWlnaHQgLyAyOwogICAgICAgIAogICAgICAgIC8qY29uc29sZS5sb2coJ0NhbGN1bGF0ZWQgaGFuZGxlIHBvc2l0aW9uIGZvciBub2RlJywgbi5pZCwgJzonLCB7IAogICAgICAgICAgaGFuZGxlWDogbi5oYW5kbGVYLCAKICAgICAgICAgIGhhbmRsZVk6IG4uaGFuZGxlWSwKICAgICAgICAgIG5vZGVYOiBuLngsIAogICAgICAgICAgbm9kZVk6IG4ueQogICAgICAgIH0pOyovCiAgICAgIH0KICAgIH0KICB9KTsKfQoKZXhwb3J0IGZ1bmN0aW9uIHJlbmRlckNvbm5lY3Rpb25zKCkgewogIGNvbnN0IG5vZGVzID0gZ2V0Q3VycmVudE5vZGVzKCk7CgogIC8vIENsZWFyIGV4aXN0aW5nIGNvbm5lY3Rpb25zCiAgc3ZnLmlubmVySFRNTCA9ICcnOwoKICAvLyBEcmF3IHBlcm1hbmVudCBjb25uZWN0aW9ucwogIG5vZGVzLmZvckVhY2gobiA9PiB7CiAgICBpZiAobi5jb25uZWN0aW9ucyAmJiBuLmNvbm5lY3Rpb25zLmxlbmd0aCkgewogICAgICBuLmNvbm5lY3Rpb25zLmZvckVhY2godG9JZCA9PiB7CiAgICAgICAgY29uc3QgdG9Ob2RlID0gbm9kZXMuZmluZCh0YXJnZXQgPT4gdGFyZ2V0LmlkID09PSB0b0lkKTsKICAgICAgICBpZiAodG9Ob2RlICYmIG4uaGFuZGxlWCAhPT0gdW5kZWZpbmVkICYmIHRvTm9kZS5oYW5kbGVYICE9PSB1bmRlZmluZWQpIHsKICAgICAgICAgIGNvbnN0IGxpbmUgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50TlMoJ2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJywgJ2xpbmUnKTsKICAgICAgICAgIGxpbmUuc2V0QXR0cmlidXRlKCd4MScsIG4uaGFuZGxlWCk7CiAgICAgICAgICBsaW5lLnNldEF0dHJpYnV0ZSgneTEnLCBuLmhhbmRsZVkpOwogICAgICAgICAgbGluZS5zZXRBdHRyaWJ1dGUoJ3gyJywgdG9Ob2RlLmhhbmRsZVgpOwogICAgICAgICAgbGluZS5zZXRBdHRyaWJ1dGUoJ3kyJywgdG9Ob2RlLmhhbmRsZVkpOwogICAgICAgICAgCiAgICAgICAgICAvLyBVc2UgZGlmZmVyZW50IHN0eWxpbmcgZm9yIGNvbm5lY3Rpb25zIGludm9sdmluZyB0ZXJtaW5hbCBub2RlcwogICAgICAgICAgaWYgKGlzVGVybWluYWxOb2RlKG4pIHx8IGlzVGVybWluYWxOb2RlKHRvTm9kZSkpIHsKICAgICAgICAgICAgbGluZS5zZXRBdHRyaWJ1dGUoJ3N0cm9rZScsICcjMTdhMmI4Jyk7CiAgICAgICAgICAgIGxpbmUuc2V0QXR0cmlidXRlKCdzdHJva2Utd2lkdGgnLCAnMicpOwogICAgICAgICAgICBsaW5lLnNldEF0dHJpYnV0ZSgnc3Ryb2tlLWRhc2hhcnJheScsICc1LDUnKTsKICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgIGxpbmUuc2V0QXR0cmlidXRlKCdzdHJva2UnLCAnYmxhY2snKTsKICAgICAgICAgICAgbGluZS5zZXRBdHRyaWJ1dGUoJ3N0cm9rZS13aWR0aCcsICcyJyk7CiAgICAgICAgICB9CiAgICAgICAgICAKICAgICAgICAgIHN2Zy5hcHBlbmRDaGlsZChsaW5lKTsKICAgICAgICB9CiAgICAgIH0pOwogICAgfQogIH0pOwoKICAvLyBEcmF3IHRlbXBvcmFyeSBjb25uZWN0aW9uIGxpbmUgaWYgZHJhZ2dpbmcKICBpZiAod2luZG93LmRyYWdnaW5nRnJvbUlkICYmIHdpbmRvdy5tb3VzZVggIT09IHVuZGVmaW5lZCAmJiB3aW5kb3cubW91c2VZICE9PSB1bmRlZmluZWQpIHsKICAgIGNvbnN0IGZyb21Ob2RlID0gbm9kZXMuZmluZChuID0+IG4uaWQgPT09IHdpbmRvdy5kcmFnZ2luZ0Zyb21JZCk7CiAgICBpZiAoZnJvbU5vZGUpIHsKICAgICAgY29uc3QgcmVjdCA9IGNhbnZhcy5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKTsKICAgICAgY29uc3QgeDIgPSB3aW5kb3cubW91c2VYIC0gcmVjdC5sZWZ0OwogICAgICBjb25zdCB5MiA9IHdpbmRvdy5tb3VzZVkgLSByZWN0LnRvcDsKICAgICAgaWYgKGZyb21Ob2RlLmhhbmRsZVggIT09IHVuZGVmaW5lZCkgewogICAgICAgIGNvbnN0IGxpbmUgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50TlMoJ2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJywgJ2xpbmUnKTsKICAgICAgICBsaW5lLnNldEF0dHJpYnV0ZSgneDEnLCBmcm9tTm9kZS5oYW5kbGVYKTsKICAgICAgICBsaW5lLnNldEF0dHJpYnV0ZSgneTEnLCBmcm9tTm9kZS5oYW5kbGVZKTsKICAgICAgICBsaW5lLnNldEF0dHJpYnV0ZSgneDInLCB4Mik7CiAgICAgICAgbGluZS5zZXRBdHRyaWJ1dGUoJ3kyJywgeTIpOwogICAgICAgIAogICAgICAgIC8vIFVzZSBkaWZmZXJlbnQgc3R5bGluZyBmb3IgdGVybWluYWwgbm9kZSBjb25uZWN0aW9ucwogICAgICAgIGlmIChpc1Rlcm1pbmFsTm9kZShmcm9tTm9kZSkpIHsKICAgICAgICAgIGxpbmUuc2V0QXR0cmlidXRlKCdzdHJva2UnLCAnIzE3YTJiOCcpOwogICAgICAgICAgbGluZS5zZXRBdHRyaWJ1dGUoJ3N0cm9rZS13aWR0aCcsICcyJyk7CiAgICAgICAgICBsaW5lLnNldEF0dHJpYnV0ZSgnc3Ryb2tlLWRhc2hhcnJheScsICc1LDUnKTsKICAgICAgICB9IGVsc2UgewogICAgICAgICAgbGluZS5zZXRBdHRyaWJ1dGUoJ3N0cm9rZScsICcjNjY2Jyk7CiAgICAgICAgICBsaW5lLnNldEF0dHJpYnV0ZSgnc3Ryb2tlLXdpZHRoJywgJzInKTsKICAgICAgICAgIGxpbmUuc2V0QXR0cmlidXRlKCdzdHJva2UtZGFzaGFycmF5JywgJzUsNScpOwogICAgICAgIH0KICAgICAgICAKICAgICAgICBsaW5lLnNldEF0dHJpYnV0ZSgncG9pbnRlci1ldmVudHMnLCAnbm9uZScpOwogICAgICAgIHN2Zy5hcHBlbmRDaGlsZChsaW5lKTsKICAgICAgfQogICAgfQogIH0KfQoKZXhwb3J0IGZ1bmN0aW9uIGFkZENvbm5lY3Rpb24oZnJvbUlkLCB0b0lkKSB7CiAgY29uc3Qgbm9kZXMgPSBnZXRDdXJyZW50Tm9kZXMoKTsKICBjb25zdCBmcm9tTm9kZSA9IG5vZGVzLmZpbmQobiA9PiBuLmlkID09PSBmcm9tSWQpOwogIGNvbnN0IHRvTm9kZSA9IG5vZGVzLmZpbmQobiA9PiBuLmlkID09PSB0b0lkKTsKICAKICBpZiAoZnJvbU5vZGUgJiYgZnJvbU5vZGUuaWQgIT09IHRvSWQgJiYgIWZyb21Ob2RlLmNvbm5lY3Rpb25zLmluY2x1ZGVzKHRvSWQpKSB7CiAgICBmcm9tTm9kZS5jb25uZWN0aW9ucy5wdXNoKHRvSWQpOwogICAgcmV0dXJuIHRydWU7CiAgfQogIHJldHVybiBmYWxzZTsKfSAAAAAAAAAAAD4eAAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAegcAAAAAAAB6BwAAAAAAAAAAAAAAAPC/"
+				]
+			]
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/jimmy/projects/mindmap",
+		"/home/jimmy/projects/mindmap/v2"
+	],
+	"file_history":
+	[
+		"/home/jimmy/projects/ice/main.js",
+		"/home/jimmy/projects/ice/src/iso/io.js",
+		"/home/jimmy/projects/ice/src/iso/scene.js",
+		"/home/jimmy/projects/ice/src/assets/test.js",
+		"/home/jimmy/projects/ice/src/rad/matrix.js",
+		"/home/jimmy/projects/ice/src/iso/editor/editor.js",
+		"/home/jimmy/projects/ice/src/iso/lights.js",
+		"/home/jimmy/projects/ice/src/rad/vector.js",
+		"/home/jimmy/projects/ice/src/rad/chainsaw.js",
+		"/home/jimmy/projects/ice/src/iso/shaders_basic.js",
+		"/home/jimmy/projects/mindmap/mindmap.code-workspace",
+		"/home/jimmy/projects/ice/src/rad/rad.js",
+		"/home/jimmy/projects/ice/src/iso/moveable.js",
+		"/home/jimmy/projects/ice/src/iso/iso.js",
+		"/home/jimmy/projects/ice/src/iso/camera.js",
+		"/home/jimmy/projects/ice/iso/iso_export/test2.js",
+		"/home/jimmy/projects/ice/includes.js",
+		"/home/jimmy/projects/ice/src/iso/collision.js",
+		"/home/jimmy/projects/ice/src/iso/roads.js",
+		"/home/jimmy/projects/ice/src/iso/player_controller.js",
+		"/home/jimmy/projects/ice/.gitignore",
+		"/home/jimmy/projects/ice/src/iso/dual_grid.js",
+		"/home/jimmy/projects/ice/src/iso/landscape.js",
+		"/home/jimmy/projects/ice/src/iso/chunk_network.js",
+		"/home/jimmy/projects/ice/src/iso/chunks.js",
+		"/home/jimmy/projects/ice/src/rad/noise.js",
+		"/home/jimmy/projects/ice/src/iso/editor/editor_chunk.js",
+		"/home/jimmy/projects/ice/src/iso/chunk.js",
+		"/home/jimmy/projects/ice/index.html",
+		"/home/jimmy/projects/ice/src/iso/editor_chunk.js",
+		"/home/jimmy/projects/ice/src/iso/editor_chainsawview.js",
+		"/home/jimmy/projects/ice/src/iso/editor_textureview.js",
+		"/home/jimmy/projects/ice/src/rad/math.js",
+		"/home/jimmy/gdrive/projects/ice/iso/iso_export/test2.js",
+		"/home/jimmy/gdrive/projects/ice/iso/iso_export/test.js",
+		"/home/jimmy/projects/ice/src/iso/editor.js",
+		"/home/jimmy/projects/ice/src/backend/iso.php",
+		"/home/jimmy/projects/ice/src/backend/iso_mysql_login.php",
+		"/home/jimmy/projects/ice/readme.md",
+		"/home/jimmy/projects/ice/src/backend/iso_mysql_login.ini.php"
+	],
+	"find":
+	{
+		"height": 27.0
+	},
+	"find_in_files":
+	{
+		"height": 101.0,
+		"where_history":
+		[
+			"/home/jimmy/projects/ice/src/iso,<project filters>",
+			"/home/jimmy/projects/ice/src,<project filters>",
+			"/home/jimmy/projects/ice/src/iso,<project filters>"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"lookatMatrix",
+			"shadowProjection",
+			"centerx",
+			"to_grid_coordinate",
+			"center_grid_coord",
+			"_camera",
+			"rectangle",
+			"float",
+			"const",
+			"texture2D",
+			"vec4",
+			"gl_FragColor",
+			"texture2D",
+			"_ed",
+			"init_drawing",
+			"texture2D",
+			"precision",
+			"to_screen_coordinates",
+			"texture2D",
+			"uploadFloatBuffer",
+			"tiles",
+			"_scene",
+			"tiles",
+			"tiles2",
+			"_tileSize",
+			"addCollision",
+			"getNoiseAtPosition",
+			"_io.loadasset",
+			"nudgeChunk",
+			"nudege",
+			"Dimension",
+			"Chunk Details",
+			"noise",
+			"collapseCollisionMap",
+			"spriteCollisionMap"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"building",
+			"Lightpoles"
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "v2/connections.js",
+					"selected": true,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7742,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1914,
+								1914
+							]
+						],
+						"settings":
+						{
+							"spell_check": true,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1094.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"stack_multiselect": false,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 39.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"pinned_build_system": "",
+	"project": "mindmap.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 349.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

@@ -1,7 +1,8 @@
-import { getCurrentNodes } from './state.js';
+import { getCurrentNodes, saveNotes } from './state.js';
 import { save } from './state.js';
 import { ATTRIBUTE_TYPES, addAttributeToNode, removeAttributeFromNode, updateAttributeValue } from './attributes.js';
 import { createNode } from './nodes.js';
+import { state } from './state.js';
 import { 
   getTerminalNode, 
   isTerminalNode, 
@@ -37,6 +38,7 @@ export function selectNode(nodeId) {
   renderAttributes();
   renderChildren();
   renderColorPicker();
+  renderNoteControls();
   renderTerminalNode();
 }
 
@@ -46,6 +48,7 @@ export function refreshAttributesPanel() {
     renderAttributes();
     renderChildren();
     renderColorPicker();
+    renderNoteControls();
     renderTerminalNode();
   }
 }
@@ -92,16 +95,47 @@ function renderNodeInfo() {
   const idLabel = document.createElement('label');
   idLabel.textContent = 'ID:';
   idLabel.className = 'node-label';
-  
+
   const idSpan = document.createElement('span');
   idSpan.textContent = node.id;
   idSpan.className = 'node-id';
-  
+
   titleSection.appendChild(titleLabel);
   titleSection.appendChild(titleInput);
   titleSection.appendChild(idLabel);
   titleSection.appendChild(idSpan);
-  
+
+  // Add file path if available (from metadata or fileObject)
+  if (node.metadata && node.metadata.path) {
+    const pathLabel = document.createElement('label');
+    pathLabel.textContent = 'Path:';
+    pathLabel.className = 'node-label';
+
+    const pathSpan = document.createElement('span');
+    pathSpan.textContent = node.metadata.path;
+    pathSpan.className = 'node-path';
+    pathSpan.style.fontSize = '11px';
+    pathSpan.style.color = '#666';
+    pathSpan.style.wordBreak = 'break-all';
+
+    titleSection.appendChild(pathLabel);
+    titleSection.appendChild(pathSpan);
+  } else if (node.fileObject && node.fileObject.webkitRelativePath) {
+    const pathLabel = document.createElement('label');
+    pathLabel.textContent = 'Path:';
+    pathLabel.className = 'node-label';
+
+    const pathSpan = document.createElement('span');
+    pathSpan.textContent = node.fileObject.webkitRelativePath;
+    pathSpan.className = 'node-path';
+    pathSpan.style.fontSize = '11px';
+    pathSpan.style.color = '#666';
+    pathSpan.style.wordBreak = 'break-all';
+
+    titleSection.appendChild(pathLabel);
+    titleSection.appendChild(pathSpan);
+  }
+
   panelHeader.appendChild(titleSection);
   panelHeader.appendChild(closeBtn);
 }
@@ -139,6 +173,116 @@ function renderColorPicker() {
   
   colorSection.appendChild(colorLabel);
   colorSection.appendChild(colorInput);
+}
+
+function renderNoteControls() {
+  if (!selectedNodeId) return;
+
+  const nodes = getCurrentNodes();
+  const node = nodes.find(n => n.id === selectedNodeId);
+  if (!node) return;
+
+  // Only show for note nodes
+  if (!node.isNote && state.currentMode !== 'notes') {
+    // Remove note controls if they exist
+    const noteSection = panel.querySelector('.note-controls-section');
+    if (noteSection) noteSection.remove();
+    return;
+  }
+
+  // Find or create note controls section
+  let noteSection = panel.querySelector('.note-controls-section');
+  if (!noteSection) {
+    noteSection = document.createElement('div');
+    noteSection.className = 'note-controls-section';
+    panel.insertBefore(noteSection, attributesList);
+  }
+
+  noteSection.innerHTML = '';
+
+  // Helper function to create a control row
+  const createRow = (labelText, control) => {
+    const row = document.createElement('div');
+    row.className = 'control-row';
+    const label = document.createElement('label');
+    label.textContent = labelText;
+    label.className = 'section-label';
+    row.appendChild(label);
+    row.appendChild(control);
+    return row;
+  };
+
+  // Helper function to create font size select
+  const createFontSizeSelect = (currentSize) => {
+    const select = document.createElement('select');
+    select.className = 'note-font-size-select';
+    [10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48].forEach(size => {
+      const option = document.createElement('option');
+      option.value = size;
+      option.textContent = size + 'px';
+      if (size === (currentSize || 14)) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+    return select;
+  };
+
+  // Title Font Size
+  const titleFontSizeSelect = createFontSizeSelect(node.titleFontSize);
+  titleFontSizeSelect.onchange = (e) => {
+    node.titleFontSize = parseInt(e.target.value);
+    saveNotes();
+    if (onNodeRender) onNodeRender();
+  };
+  noteSection.appendChild(createRow('Title Font Size:', titleFontSizeSelect));
+
+  // Title Color
+  const titleColorInput = document.createElement('input');
+  titleColorInput.type = 'color';
+  titleColorInput.className = 'note-color-picker';
+  titleColorInput.value = node.titleColor || '#000000';
+  titleColorInput.onchange = (e) => {
+    node.titleColor = e.target.value;
+    saveNotes();
+    if (onNodeRender) onNodeRender();
+  };
+  noteSection.appendChild(createRow('Title Color:', titleColorInput));
+
+  // Description toggle
+  const descToggleCheckbox = document.createElement('input');
+  descToggleCheckbox.type = 'checkbox';
+  descToggleCheckbox.className = 'note-desc-toggle';
+  descToggleCheckbox.checked = node.showDescription || false;
+  descToggleCheckbox.onchange = (e) => {
+    node.showDescription = e.target.checked;
+    saveNotes();
+    if (onNodeRender) onNodeRender();
+  };
+  noteSection.appendChild(createRow('Show Description:', descToggleCheckbox));
+
+  // Description Font Size (only show if description is enabled)
+  if (node.showDescription) {
+    const descFontSizeSelect = createFontSizeSelect(node.descriptionFontSize);
+    descFontSizeSelect.onchange = (e) => {
+      node.descriptionFontSize = parseInt(e.target.value);
+      saveNotes();
+      if (onNodeRender) onNodeRender();
+    };
+    noteSection.appendChild(createRow('Description Font:', descFontSizeSelect));
+
+    // Description Color
+    const descColorInput = document.createElement('input');
+    descColorInput.type = 'color';
+    descColorInput.className = 'note-color-picker';
+    descColorInput.value = node.descriptionColor || '#000000';
+    descColorInput.onchange = (e) => {
+      node.descriptionColor = e.target.value;
+      saveNotes();
+      if (onNodeRender) onNodeRender();
+    };
+    noteSection.appendChild(createRow('Description Color:', descColorInput));
+  }
 }
 
 function renderChildren() {

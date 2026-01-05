@@ -303,7 +303,7 @@ export class ParserAdapter {
   /**
    * Create a node with unique ID
    */
-  createNode({ label, type, level, parent, x, y, attributes = {} }) {
+  createNode({ label, type, level, parent, x, y, attributes = {}, fileObject = null, ...extraProps }) {
     return {
       id: `node-${this.nodeIdCounter++}`,
       label,
@@ -313,7 +313,9 @@ export class ParserAdapter {
       x,
       y,
       attributes,
-      collapsed: false
+      collapsed: false,
+      fileObject, // Preserve fileObject for flow mode analysis
+      ...extraProps // Preserve any other properties
     };
   }
 

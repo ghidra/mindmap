@@ -304,6 +304,12 @@ export class ParserIntegration {
       this.clearCanvas();
       this.adapter.reset();
 
+      // Reset to hierarchical mode when loading new project
+      state.currentMode = 'hierarchical';
+      state.path = [];
+      state.panX = 0;
+      state.panY = 0;
+
       // Build directory tree
       const builder = new DirectoryStructureBuilder();
       const filteredFiles = files.filter(file =>
@@ -339,6 +345,9 @@ export class ParserIntegration {
       // Load into state
       this.loadNodesIntoState(nodes, connections);
 
+      // Detect and store entry point for flow mode
+      this.detectAndStoreEntryPoint(state.nodes);
+
       // Render
       render();
 
@@ -356,31 +365,72 @@ export class ParserIntegration {
     const nodes = [];
     const connections = [];
 
-    // Create root project node
-    const rootNode = this.adapter.createNode({
-      label: projectName,
-      type: 'project',
-      level: 0,
-      x: 400,
-      y: 50,
-      attributes: {
-        type: 'project',
-        fileCount: allFiles.length
-      }
-    });
-    nodes.push(rootNode);
+    // The directoryTree is a synthetic 'root' with the project folder as first child
+    // Process the synthetic root's children and files directly at root level
+    // This shows the project contents without an extra wrapper node
 
-    // Process directory tree recursively
-    const result = await this.processDirectoryNode(
-      directoryTree,
-      rootNode,
-      1,
-      400,
-      150
-    );
+    const totalItems = directoryTree.children.length + directoryTree.files.length;
+    const spacingX = 200;
+    const startX = 400;
+    const startY = 50;
+    const currentX = startX - (totalItems * spacingX / 2);
+    let offsetX = 0;
 
-    nodes.push(...result.nodes);
-    connections.push(...result.connections);
+    // Process subdirectories (usually just the project folder)
+    for (const subDir of directoryTree.children) {
+      const dirDisplayNode = this.adapter.createNode({
+        label: subDir.name + '/',
+        type: 'directory',
+        level: 0,
+        parent: null,
+        x: currentX + offsetX,
+        y: startY,
+        attributes: {
+          type: 'directory',
+          path: subDir.name
+        }
+      });
+
+      nodes.push(dirDisplayNode);
+
+      // Recursively process children and store them IN the directory node
+      const childResult = await this.processDirectoryNode(
+        subDir,
+        dirDisplayNode,
+        1,
+        currentX + offsetX,
+        startY + 120
+      );
+
+      // Store children in the directory node for lazy loading
+      dirDisplayNode.childNodes = childResult.nodes;
+      dirDisplayNode.childConnections = childResult.connections;
+
+      offsetX += spacingX;
+    }
+
+    // Process root-level files
+    for (const fileNode of directoryTree.files) {
+      const fileDisplayNode = this.adapter.createNode({
+        label: fileNode.name,
+        type: 'file',
+        level: 0,
+        parent: null,
+        x: currentX + offsetX,
+        y: startY,
+        attributes: {
+          type: 'file',
+          path: fileNode.file.webkitRelativePath,
+          parsed: false
+        },
+        fileObject: fileNode.file
+      });
+
+      nodes.push(fileDisplayNode);
+      offsetX += spacingX;
+    }
+
+    console.error('Created', nodes.length, 'root-level nodes');
 
     return { nodes, connections };
   }
@@ -415,10 +465,14 @@ export class ParserIntegration {
 
       // Only add the directory node itself, not its children
       nodes.push(dirDisplayNode);
-      connections.push({
-        from: parentNode.id,
-        to: dirDisplayNode.id
-      });
+
+      // Only create connection if there's a parent
+      if (parentNode) {
+        connections.push({
+          from: parentNode.id,
+          to: dirDisplayNode.id
+        });
+      }
 
       // Recursively process children and store them IN the directory node
       const childResult = await this.processDirectoryNode(
@@ -443,7 +497,7 @@ export class ParserIntegration {
         label: fileNode.name,
         type: 'file',
         level: level,
-        parent: parentNode.id,
+        parent: parentNode ? parentNode.id : null,
         x: currentX + offsetX,
         y: startY,
         attributes: {
@@ -455,10 +509,14 @@ export class ParserIntegration {
       });
 
       nodes.push(fileDisplayNode);
-      connections.push({
-        from: parentNode.id,
-        to: fileDisplayNode.id
-      });
+
+      // Only create connection if there's a parent
+      if (parentNode) {
+        connections.push({
+          from: parentNode.id,
+          to: fileDisplayNode.id
+        });
+      }
 
       offsetX += spacingX;
     }
@@ -764,6 +822,67 @@ export class ParserIntegration {
         });
       }
     });
+  }
+
+  /**
+   * Detect and store entry point for flow mode
+   * Searches for index.html, main.js, app.js, or index.js
+   * Prioritizes files at higher levels of the hierarchy
+   */
+  detectAndStoreEntryPoint(nodes) {
+    // Entry point priority: HTML first, then main/index JS files
+    const entryPointNames = [
+      { name: 'index.html', priority: 1, type: 'html' },
+      { name: 'main.js', priority: 2, type: 'js-entry' },
+      { name: 'index.js', priority: 3, type: 'js-entry' },
+      { name: 'app.js', priority: 4, type: 'js' }
+    ];
+
+    let bestCandidate = null;
+    let bestDepth = Infinity;
+    let bestPriority = Infinity;
+
+    // Breadth-first search to prioritize files at higher levels
+    const searchLevel = (nodeList, depth) => {
+      for (const node of nodeList) {
+        const title = node.title ? node.title.toLowerCase() : '';
+
+        // Check if this is an entry point candidate
+        for (const candidate of entryPointNames) {
+          if (title === candidate.name) {
+            // Prefer files at shallower depth, or higher priority if same depth
+            if (depth < bestDepth || (depth === bestDepth && candidate.priority < bestPriority)) {
+              bestCandidate = node;
+              bestDepth = depth;
+              bestPriority = candidate.priority;
+              console.error(`Found candidate: ${title} at depth ${depth} (priority ${candidate.priority})`);
+            }
+          }
+        }
+      }
+
+      // Search children at next depth level
+      for (const node of nodeList) {
+        if (node.children && node.children.length > 0) {
+          searchLevel(node.children, depth + 1);
+        }
+        if (node.childNodes && node.childNodes.length > 0) {
+          searchLevel(node.childNodes, depth + 1);
+        }
+      }
+    };
+
+    // Start breadth-first search from root
+    searchLevel(nodes, 0);
+
+    if (bestCandidate) {
+      state.flowConfig.entryPoint = bestCandidate.id;
+      console.log(`Entry point: ${bestCandidate.title}`);
+      save();
+    } else {
+      console.error('No entry point found in', nodes.length, 'root nodes');
+      state.flowConfig.entryPoint = null;
+    }
   }
 }
 

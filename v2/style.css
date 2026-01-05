@@ -5,7 +5,7 @@ html,body{margin:0;padding:0;height:100%;font-family:sans-serif}
 #breadcrumb button{margin-left:4px}
 
 #main-content{display:flex;height:calc(100% - 46px);position:relative}
-#canvas{position:relative;width:100%;height:100%;background:#f0f0f0;overflow:hidden;flex:1}
+#canvas{position:relative;width:100%;height:100%;background:#f0f0f0;overflow:hidden;flex:1;cursor:grab}
 #connections{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index: 10; }
 
 /* =============== Attributes Panel ================= */
@@ -612,17 +612,690 @@ html,body{margin:0;padding:0;height:100%;font-family:sans-serif}
 
 /* Connector handle for drag-to-connect */
 .handle{
-  display:inline-block;
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
   width:10px;
   height:10px;
   background:black;
   border-radius:50%;
-  margin:2px 4px;
-  vertical-align:middle;
   cursor:crosshair;
+  z-index: 10;
+}
+
+.handle:hover {
+  background: #007bff;
+  width: 12px;
+  height: 12px;
+  right: -6px;
+}
+
+/* Input ports container - left side */
+.input-ports-container {
+  position: absolute;
+  left: -5px;
+  top: 0;
+  height: 100%;
+  pointer-events: none; /* Allow clicking through container */
+}
+
+.input-port {
+  position: absolute;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  background: #28a745;
+  border-radius: 50%;
+  cursor: crosshair;
+  z-index: 10;
+  pointer-events: auto; /* But allow clicking ports */
+  border: 2px solid white;
+}
+
+.input-port:hover {
+  background: #218838;
+  width: 12px;
+  height: 12px;
+  left: -1px;
+}
+
+/* Note node 4-sided ports */
+.note-port {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #6c757d;
+  border-radius: 50%;
+  cursor: crosshair;
+  z-index: 15;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.note-port:hover {
+  background: #007bff;
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 3px 6px rgba(0,123,255,0.4);
+}
+
+.note-port-top {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.note-port-right {
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.note-port-bottom {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.note-port-left {
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /* Child list */
 .child-list{margin:6px 0 0 12px;padding:0;list-style:none;border-left:1px dotted #aaa}
 .child-list li{margin:4px 0;display:flex;align-items:center;gap:4px}
 .child-list li span{flex:1 1 auto}
+
+/* =============== Flow Mode ================= */
+/* Mode tabs */
+.mode-tabs{
+  display:inline-flex;
+  gap:4px;
+  margin-left:20px;
+  border:1px solid #ddd;
+  border-radius:4px;
+  overflow:hidden;
+  background:#f8f8f8;
+}
+
+.mode-tab{
+  background:#f8f8f8;
+  color:#666;
+  border:none;
+  padding:6px 12px;
+  font-size:13px;
+  cursor:pointer;
+  transition:all 0.2s;
+  border-right:1px solid #ddd;
+}
+
+.mode-tab:last-child{
+  border-right:none;
+}
+
+.mode-tab:hover{
+  background:#e9ecef;
+}
+
+.mode-tab.active{
+  background:#007bff;
+  color:white;
+  font-weight:bold;
+}
+
+/* Flow controls */
+.flow-controls{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-left:15px;
+  padding:4px 10px;
+  background:#f0f8ff;
+  border:1px solid #b3d9ff;
+  border-radius:4px;
+}
+
+.flow-controls label{
+  font-size:12px;
+  color:#0066cc;
+  font-weight:bold;
+  margin:0;
+}
+
+.flow-controls select{
+  border:1px solid #b3d9ff;
+  border-radius:3px;
+  padding:4px 8px;
+  font-size:12px;
+  background:#fff;
+  color:#333;
+}
+
+.flow-controls select:focus{
+  outline:none;
+  border-color:#007bff;
+  box-shadow:0 0 0 2px rgba(0,123,255,.25);
+}
+
+.flow-controls button{
+  background:#17a2b8;
+  color:white;
+  border:none;
+  border-radius:3px;
+  padding:4px 10px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.flow-controls button:hover{
+  background:#138496;
+}
+
+/* Flow mode nodes */
+.node.flow-mode{
+  box-shadow:3px 3px 8px rgba(0,123,255,.2);
+  border:2px solid #007bff;
+}
+
+.node.flow-entry-point{
+  border:3px solid #28a745;
+  box-shadow:0 0 15px rgba(40,167,69,.4);
+  background:#e8f5e9;
+}
+
+.node.flow-entry-point .node-header{
+  background:#c8e6c9;
+  font-weight:bold;
+}
+
+/* Synthetic structure nodes in flow mode */
+.node.synthetic-node{
+  border-style:dashed;
+  opacity:0.95;
+  font-size:13px;
+}
+
+.node.synthetic-class{
+  border-color:#8b5cf6;
+  background:#f3e8ff;
+  box-shadow:2px 2px 6px rgba(139,92,246,.15);
+}
+
+.node.synthetic-class .node-header{
+  background:#e9d5ff;
+  color:#6d28d9;
+  font-weight:600;
+}
+
+.node.synthetic-method{
+  border-color:#a78bfa;
+  background:#faf5ff;
+  box-shadow:1px 1px 4px rgba(167,139,250,.12);
+  font-size:12px;
+}
+
+.node.synthetic-method .node-header{
+  background:#ede9fe;
+  color:#7c3aed;
+  font-style:italic;
+}
+
+.node.synthetic-function{
+  border-color:#10b981;
+  background:#d1fae5;
+  box-shadow:2px 2px 6px rgba(16,185,129,.15);
+}
+
+.node.synthetic-function .node-header{
+  background:#a7f3d0;
+  color:#047857;
+  font-weight:600;
+}
+
+/* Flow connection styling will be added in Phase 5 */
+
+/* =============== Dark Mode ================= */
+body.dark-mode {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+body.dark-mode #controls {
+  background: #2d2d2d;
+  box-shadow: 0 2px 4px rgba(0,0,0,.5);
+  border-bottom: 1px solid #404040;
+}
+
+body.dark-mode #controls button,
+body.dark-mode #breadcrumb button {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #505050;
+}
+
+body.dark-mode #controls button:hover,
+body.dark-mode #breadcrumb button:hover {
+  background: #454545;
+  border-color: #606060;
+}
+
+body.dark-mode #darkModeToggle {
+  background: #454545;
+  border-color: #606060;
+}
+
+body.dark-mode .mode-tab {
+  background: #3a3a3a;
+  color: #a0a0a0;
+  border: 1px solid #505050;
+}
+
+body.dark-mode .mode-tab.active {
+  background: #007bff;
+  color: #fff;
+  border-color: #0056b3;
+}
+
+body.dark-mode #canvas {
+  background: #252525;
+}
+
+body.dark-mode #connections line {
+  opacity: 0.8;
+}
+
+/* Dark mode nodes */
+body.dark-mode .node {
+  background: #4a90e2;
+  border-color: #357abd;
+  color: #ffffff;
+  box-shadow: 2px 2px 8px rgba(0,0,0,.5);
+}
+
+body.dark-mode .node-header {
+  background: #357abd;
+  border-bottom: 1px solid #2a5a8d;
+}
+
+body.dark-mode .node-header input {
+  background: #357abd;
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+}
+
+body.dark-mode .node-body button {
+  background: #404040;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+body.dark-mode .node-body button:hover {
+  background: #505050;
+  border-color: #666;
+}
+
+body.dark-mode .handle {
+  background: #606060;
+  border: 2px solid #808080;
+}
+
+body.dark-mode .handle:hover {
+  background: #707070;
+  border-color: #909090;
+}
+
+/* Dark mode attributes panel */
+body.dark-mode #attributes-panel {
+  background: #2d2d2d;
+  border-left: 1px solid #404040;
+  box-shadow: -2px 0 4px rgba(0,0,0,.5);
+}
+
+body.dark-mode .panel-header {
+  background: #353535;
+  border-bottom: 1px solid #404040;
+}
+
+body.dark-mode .panel-header h3,
+body.dark-mode .node-label {
+  color: #c0c0c0;
+}
+
+body.dark-mode .node-title-input,
+body.dark-mode .attribute-value,
+body.dark-mode #attribute-name,
+body.dark-mode #attribute-value {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+body.dark-mode .node-title-input:focus,
+body.dark-mode .attribute-value:focus,
+body.dark-mode #attribute-name:focus,
+body.dark-mode #attribute-value:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,.5);
+}
+
+body.dark-mode .node-id,
+body.dark-mode .attribute-type {
+  background: #353535;
+  color: #a0a0a0;
+  border-color: #555;
+}
+
+body.dark-mode .close-btn {
+  color: #a0a0a0;
+}
+
+body.dark-mode .close-btn:hover {
+  color: #e0e0e0;
+  background: #404040;
+}
+
+body.dark-mode select {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+body.dark-mode select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Dark mode for sections */
+body.dark-mode .color-section,
+body.dark-mode .children-section,
+body.dark-mode .terminal-section {
+  background: #2a2a2a;
+  border: 1px solid #404040;
+}
+
+body.dark-mode .section-label {
+  color: #c0c0c0;
+}
+
+body.dark-mode .child-item,
+body.dark-mode .terminal-attribute-item {
+  background: #353535;
+  border: 1px solid #505050;
+}
+
+body.dark-mode .child-name,
+body.dark-mode .attribute-name {
+  color: #e0e0e0;
+}
+
+body.dark-mode .remove-child,
+body.dark-mode .remove-attribute {
+  background: #8b0000;
+  color: #fff;
+  border: 1px solid #a00;
+}
+
+body.dark-mode .remove-child:hover,
+body.dark-mode .remove-attribute:hover {
+  background: #a00;
+}
+
+body.dark-mode .empty-children,
+body.dark-mode .empty-terminal-attributes,
+body.dark-mode .empty-attributes {
+  color: #808080;
+  background: #2a2a2a;
+}
+
+/* Dark mode terminal nodes */
+body.dark-mode .terminal-node {
+  background: #06b6d4;
+  border-color: #0891b2;
+}
+
+body.dark-mode .terminal-node .node-header {
+  background: #0891b2;
+  border-bottom-color: #0e7490;
+}
+
+body.dark-mode .terminal-title {
+  color: #f0fdff;
+  font-weight: 600;
+}
+
+/* Dark mode synthetic nodes */
+body.dark-mode .node.synthetic-class {
+  background: #8b5cf6;
+  border-color: #6d28d9;
+}
+
+body.dark-mode .node.synthetic-class .node-header {
+  background: #7c3aed;
+  color: #f3e8ff;
+}
+
+body.dark-mode .node.synthetic-method {
+  background: #a78bfa;
+  border-color: #8b5cf6;
+}
+
+body.dark-mode .node.synthetic-method .node-header {
+  background: #9333ea;
+  color: #f3e8ff;
+}
+
+body.dark-mode .node.synthetic-function {
+  background: #10b981;
+  border-color: #059669;
+}
+
+body.dark-mode .node.synthetic-function .node-header {
+  background: #059669;
+  color: #d1fae5;
+  font-weight: 700;
+}
+
+/* Dark mode flow entry point */
+body.dark-mode .node.flow-entry-point {
+  background: #f59e0b;
+  border-color: #d97706;
+  box-shadow: 0 0 16px rgba(245,158,11,.6);
+}
+
+body.dark-mode .node.flow-entry-point .node-header {
+  background: #d97706;
+  color: #fffbeb;
+  font-weight: 700;
+}
+
+/* Dark mode forms */
+body.dark-mode #add-attribute-form,
+body.dark-mode .terminal-attribute-form {
+  background: #2a2a2a;
+  border: 1px solid #404040;
+}
+
+body.dark-mode #add-attribute-form h4 {
+  color: #c0c0c0;
+  border-bottom-color: #404040;
+}
+
+body.dark-mode #add-attribute-form button[type="submit"],
+body.dark-mode .terminal-attribute-form button[type="submit"] {
+  background: #007bff;
+  color: #fff;
+  border: 1px solid #0056b3;
+}
+
+body.dark-mode #add-attribute-form button[type="submit"]:hover,
+body.dark-mode .terminal-attribute-form button[type="submit"]:hover {
+  background: #0056b3;
+}
+
+body.dark-mode #add-attribute-form button[type="button"],
+body.dark-mode .terminal-attribute-form button[type="button"] {
+  background: #555;
+  color: #e0e0e0;
+  border: 1px solid #666;
+}
+
+body.dark-mode #add-attribute-form button[type="button"]:hover,
+body.dark-mode .terminal-attribute-form button[type="button"]:hover {
+  background: #666;
+}
+
+/* =============== Notes Mode ================= */
+.node.note-node {
+  min-width: 100px; /* Allow smaller scaling */
+  min-height: 80px; /* Allow smaller scaling */
+  resize: none; /* Disable browser resize, we'll handle it custom */
+  overflow: hidden; /* Prevent content from overflowing */
+}
+
+/* Override general node min-width for note nodes */
+.node.note-node .node-header {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.node.note-node .node-header input {
+  width: 100%;
+  min-width: 0; /* Allow input to shrink below default min-width */
+  box-sizing: border-box;
+}
+
+/* Note controls in attributes panel */
+.note-controls-section {
+  padding: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e0e0e0;
+  background: rgba(0, 123, 255, 0.05);
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.control-row:last-child {
+  margin-bottom: 0;
+}
+
+.note-font-size-select {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 80px;
+}
+
+.note-font-size-select:hover {
+  border-color: #007bff;
+}
+
+.note-desc-toggle {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.note-color-picker {
+  cursor: pointer;
+  width: 60px;
+  height: 30px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.note-color-picker:hover {
+  border-color: #007bff;
+}
+
+.note-description {
+  width: 100%;
+  min-height: 60px;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: none;
+  font-family: inherit;
+  font-size: inherit;
+  background: rgba(255, 255, 255, 0.5);
+  box-sizing: border-box; /* Include padding and border in width calculation */
+  display: block; /* Ensure it's a block element */
+}
+
+.note-description:focus {
+  outline: none;
+  border-color: #007bff;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* Resize handle (bottom-right corner) */
+.resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, #999 50%);
+}
+
+.resize-handle:hover {
+  background: linear-gradient(135deg, transparent 50%, #007bff 50%);
+}
+
+/* Dark mode notes */
+body.dark-mode .note-controls-section {
+  border-bottom-color: #444;
+  background: rgba(0, 123, 255, 0.1);
+}
+
+body.dark-mode .note-font-size-select {
+  background: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+body.dark-mode .note-font-size-select:hover {
+  border-color: #007bff;
+}
+
+body.dark-mode .note-color-picker {
+  border-color: #555;
+}
+
+body.dark-mode .note-color-picker:hover {
+  border-color: #007bff;
+}
+
+body.dark-mode .note-description {
+  background: rgba(42, 42, 42, 0.8);
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+body.dark-mode .note-description:focus {
+  background: rgba(58, 58, 58, 0.9);
+  border-color: #007bff;
+}
+
+body.dark-mode .resize-handle {
+  background: linear-gradient(135deg, transparent 50%, #666 50%);
+}
+
+body.dark-mode .resize-handle:hover {
+  background: linear-gradient(135deg, transparent 50%, #007bff 50%);
+}
