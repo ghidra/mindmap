@@ -1,6 +1,7 @@
 import { state, save, getCurrentNodes } from './state.js';
 import { render } from './render.js';
 import { FlowAnalyzer } from './flow-analysis/flow-analyzer.js';
+import { NodeFlowTracer } from './flow-analysis/node-tracer.js';
 
 /**
  * Advanced Flow Layout Algorithm
@@ -238,6 +239,72 @@ export async function initializeFlowMode() {
   });
 
   layoutEngine.layout(state.flowConfig.executionGraph);
+}
+
+/**
+ * Initialize node-specific flow mode (trace from selected node)
+ * @param {string} nodeId - ID of node to trace from
+ * @param {string} direction - 'forward', 'backward', or 'both'
+ */
+export async function initializeNodeFlowMode(nodeId, direction = 'forward') {
+  console.log(`Initializing node flow mode for ${nodeId} (direction: ${direction})`);
+
+  try {
+    // Create NodeFlowTracer
+    const tracer = new NodeFlowTracer();
+
+    // Trace from the selected node
+    const executionGraph = await tracer.traceFromNode(
+      nodeId,
+      direction,
+      state.flowConfig.traceDepth
+    );
+
+    // Update flow config
+    state.flowConfig.executionGraph = executionGraph;
+    state.flowConfig.flowType = 'node-trace';
+    state.flowConfig.tracedNode = nodeId;
+    state.flowConfig.traceDirection = direction;
+
+    // Apply layout to traced graph
+    const layoutEngine = new FlowLayout({
+      direction: state.flowConfig.layoutDirection,
+      nodeWidth: 140,
+      nodeHeight: 80,
+      minHorizontalSpacing: 40,
+      minVerticalSpacing: 80,
+      levelSpacing: 150,
+      startX: 100,
+      startY: 100,
+      maxWidth: 1600
+    });
+
+    layoutEngine.layout(state.flowConfig.executionGraph);
+
+    save();
+
+    console.log(`Node flow mode initialized: ${executionGraph.nodes.length} nodes in trace`);
+
+  } catch (error) {
+    console.error('Failed to initialize node flow mode:', error);
+    throw error;
+  }
+}
+
+/**
+ * Clear node trace and return to entry-point flow mode
+ */
+export async function clearNodeTrace() {
+  console.log('Clearing node trace, returning to entry-point flow');
+
+  state.flowConfig.flowType = 'entry-point';
+  state.flowConfig.tracedNode = null;
+  state.flowConfig.traceDirection = 'forward';
+
+  // Rebuild entry-point flow
+  await initializeFlowMode();
+
+  save();
 }
 
 /**

@@ -1,0 +1,588 @@
+/**
+ * Modular Node Framework - Enhanced Styles
+ * Comprehensive styling for the new node system
+ */
+
+/* ========== Node Base Styles ========== */
+
+.node {
+  position: absolute;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s, transform 0.1s;
+  cursor: move;
+  overflow: visible;
+  min-width: 80px;
+  min-height: 60px;
+}
+
+.node:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.node.selected {
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.4), 0 4px 16px rgba(74, 144, 226, 0.3);
+}
+
+.node.in-group {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Dark mode */
+body.dark-mode .node {
+  background: #2a2a2a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .node:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ========== Node Type Specific Styles ========== */
+
+.node-type-file {
+  border-left: 4px solid #9e9e9e;
+}
+
+.node-type-class {
+  border-left: 4px solid #2196f3;
+}
+
+.node-type-function {
+  border-left: 4px solid #9c27b0;
+}
+
+.node-type-note {
+  background: #fff9c4;
+  border-color: #fbc02d;
+}
+
+body.dark-mode .node-type-note {
+  background: #3a3520;
+  border-color: #fbc02d;
+}
+
+.node-type-group {
+  background: rgba(100, 150, 200, 0.05);
+  border: 2px dashed #4a90e2;
+  box-shadow: none;
+}
+
+body.dark-mode .node-type-group {
+  background: rgba(74, 144, 226, 0.1);
+}
+
+.node-type-passthrough {
+  background: #f5f5f5;
+  min-width: 60px;
+  min-height: 40px;
+}
+
+/* ========== Node Header ========== */
+
+.node-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 4px 4px 0 0;
+  cursor: move;
+}
+
+body.dark-mode .node-header {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.node-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.node-title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.node-title:focus {
+  background: rgba(74, 144, 226, 0.1);
+}
+
+body.dark-mode .node-title {
+  color: #e0e0e0;
+}
+
+/* ========== Node Content ========== */
+
+.node-content {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #666;
+}
+
+body.dark-mode .node-content {
+  color: #aaa;
+}
+
+/* ========== Node Controls ========== */
+
+.node-controls {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.node:hover .node-controls {
+  opacity: 1;
+}
+
+.node-delete-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ff5252;
+  color: white;
+  border: 2px solid white;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.node-delete-btn:hover {
+  background: #d32f2f;
+  transform: scale(1.1);
+}
+
+.node-expand-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #4a90e2;
+  color: white;
+  border: 2px solid white;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.node-expand-btn:hover {
+  background: #357abd;
+  transform: scale(1.1);
+}
+
+.resize-handle {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background: #4a90e2;
+  border: 2px solid white;
+  border-radius: 2px;
+  cursor: nwse-resize;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ========== Ports ========== */
+
+.port {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: #28a745;
+  cursor: crosshair;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.port:hover {
+  transform: scale(1.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.port-input {
+  background: #28a745;
+}
+
+.port-output {
+  background: #007bff;
+}
+
+.port-bidirectional {
+  background: #ffc107;
+}
+
+.port-label {
+  position: absolute;
+  font-size: 10px;
+  white-space: nowrap;
+  color: #666;
+  pointer-events: none;
+  font-weight: 500;
+}
+
+.port-left .port-label {
+  right: 100%;
+  margin-right: 6px;
+}
+
+.port-right .port-label {
+  left: 100%;
+  margin-left: 6px;
+}
+
+.port-top .port-label {
+  bottom: 100%;
+  margin-bottom: 6px;
+}
+
+.port-bottom .port-label {
+  top: 100%;
+  margin-top: 6px;
+}
+
+/* ========== Connections ========== */
+
+.connection {
+  stroke: #666;
+  stroke-width: 2;
+  fill: none;
+  pointer-events: stroke;
+  cursor: pointer;
+  transition: stroke-width 0.2s;
+}
+
+.connection:hover {
+  stroke-width: 3;
+  stroke: #4a90e2;
+}
+
+.temporary-connection {
+  stroke: #4a90e2;
+  stroke-dasharray: 5, 5;
+  animation: dash 0.5s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+.animated-connection {
+  stroke: #2196f3;
+  stroke-width: 3;
+}
+
+/* ========== Details Panel ========== */
+
+#attributes-panel {
+  position: fixed;
+  right: -320px;
+  top: 80px;
+  width: 320px;
+  height: calc(100vh - 100px);
+  background: white;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s ease;
+  z-index: 100;
+  overflow-y: auto;
+  border-radius: 8px 0 0 8px;
+}
+
+#attributes-panel.visible {
+  right: 0;
+}
+
+body.dark-mode #attributes-panel {
+  background: #2a2a2a;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.details-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f9f9f9;
+}
+
+body.dark-mode .details-header {
+  background: #333;
+  border-bottom-color: #444;
+}
+
+.details-icon {
+  font-size: 32px;
+}
+
+.details-node-type {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #999;
+  letter-spacing: 0.5px;
+}
+
+.details-node-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+body.dark-mode .details-node-title {
+  color: #e0e0e0;
+}
+
+.details-section {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+body.dark-mode .details-section {
+  border-bottom-color: #333;
+}
+
+.details-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+  letter-spacing: 0.5px;
+}
+
+body.dark-mode .details-section h3 {
+  color: #999;
+}
+
+.details-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.field-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.field-value {
+  color: #333;
+  font-family: monospace;
+}
+
+body.dark-mode .field-label {
+  color: #aaa;
+}
+
+body.dark-mode .field-value {
+  color: #e0e0e0;
+}
+
+/* ========== Port Info in Details Panel ========== */
+
+.port-item {
+  margin-bottom: 8px;
+}
+
+.port-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+body.dark-mode .port-info {
+  background: #333;
+}
+
+.port-label-text {
+  flex: 1;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.port-side-badge,
+.port-type-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #e0e0e0;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+body.dark-mode .port-side-badge,
+body.dark-mode .port-type-badge {
+  background: #444;
+  color: #bbb;
+}
+
+.port-type-input {
+  background: #28a745;
+  color: white;
+}
+
+.port-type-output {
+  background: #007bff;
+  color: white;
+}
+
+.port-type-bidirectional {
+  background: #ffc107;
+  color: #333;
+}
+
+/* ========== Buttons ========== */
+
+.small-btn,
+.icon-btn {
+  padding: 6px 12px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.small-btn:hover,
+.icon-btn:hover {
+  background: #e0e0e0;
+}
+
+body.dark-mode .small-btn,
+body.dark-mode .icon-btn {
+  background: #444;
+  border-color: #666;
+  color: #e0e0e0;
+}
+
+body.dark-mode .small-btn:hover,
+body.dark-mode .icon-btn:hover {
+  background: #555;
+}
+
+.icon-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========== Attribute Rows ========== */
+
+.attribute-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.attribute-label {
+  min-width: 80px;
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.attribute-row input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+body.dark-mode .attribute-row input {
+  background: #333;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+/* ========== Animations ========== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.node {
+  animation: fadeIn 0.2s ease;
+}
+
+/* ========== Responsive ========== */
+
+@media (max-width: 768px) {
+  #attributes-panel {
+    width: 100%;
+    right: -100%;
+    top: 0;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+}
+
+/* ========== Accessibility ========== */
+
+.node:focus-visible {
+  outline: 3px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+.port:focus-visible {
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}

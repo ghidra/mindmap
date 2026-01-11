@@ -18,6 +18,10 @@ html,body{margin:0;padding:0;height:100%;font-family:sans-serif}
   box-shadow:-2px 0 4px rgba(0,0,0,.1);
 }
 
+#attributes-panel.visible{
+  display:flex;
+}
+
 .panel-header{
   padding:10px;
   border-bottom:1px solid #eee;
@@ -1298,4 +1302,120 @@ body.dark-mode .resize-handle {
 
 body.dark-mode .resize-handle:hover {
   background: linear-gradient(135deg, transparent 50%, #007bff 50%);
+}
+
+/* =============== Trace Flow Features ================= */
+
+/* Trace Flow Button */
+.trace-flow-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.trace-flow-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+/* Traced Node (source of trace) */
+.traced-node {
+  border: 3px solid #00ff00 !important;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.6) !important;
+  animation: pulse 2s ease-in-out infinite;
+  z-index: 100 !important;
+}
+
+/* Nodes on trace path */
+.on-trace-path {
+  border: 2px solid #0088ff;
+  box-shadow: 0 0 10px rgba(0, 136, 255, 0.4);
+}
+
+/* Nodes NOT on trace path (faded) */
+.off-trace-path {
+  opacity: 0.25;
+  filter: grayscale(0.9);
+  pointer-events: none;
+}
+
+/* Pulse animation for traced node */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.9);
+  }
+}
+
+/* Flow Mode Indicator */
+#flow-mode-indicator {
+  font-size: 12px;
+  color: #667eea;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+/* Clear Trace Button */
+#clear-trace-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+#clear-trace-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* New node type styles for deep parsing */
+.node[data-type="parameter"],
+.node[data-type="local-variable"],
+.node[data-type="control-flow"],
+.node[data-type="block"],
+.node[data-type="call"] {
+  font-size: 11px;
+  padding: 6px 8px;
+}
+
+.node[data-type="parameter"] {
+  background: #e3f2fd;
+  border-left: 3px solid #2196f3;
+}
+
+.node[data-type="local-variable"] {
+  background: #f3e5f5;
+  border-left: 3px solid #9c27b0;
+}
+
+.node[data-type="control-flow"] {
+  background: #fff3e0;
+  border-left: 3px solid #ff9800;
+}
+
+.node[data-type="block"] {
+  background: #f1f8e9;
+  border-left: 3px solid #8bc34a;
+}
+
+.node[data-type="call"] {
+  background: #fce4ec;
+  border-left: 3px solid #e91e63;
 }

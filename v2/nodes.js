@@ -93,8 +93,26 @@ export function renderNodes(onRender, onSelectNode) {
     if (state.currentMode === 'flow') {
       el.classList.add('flow-mode');
 
-      // Highlight entry point
-      if (state.flowConfig.entryPoint === n.id) {
+      // Node-trace mode styling
+      if (state.flowConfig.flowType === 'node-trace') {
+        // Highlight the traced node
+        if (state.flowConfig.tracedNode === n.id) {
+          el.classList.add('traced-node');
+        } else {
+          // Check if node is on the trace path
+          const isOnPath = state.flowConfig.executionGraph &&
+            state.flowConfig.executionGraph.nodes.some(gn => gn.id === n.id);
+
+          if (isOnPath) {
+            el.classList.add('on-trace-path');
+          } else {
+            el.classList.add('off-trace-path');
+          }
+        }
+      }
+
+      // Highlight entry point (for entry-point mode)
+      if (state.flowConfig.flowType === 'entry-point' && state.flowConfig.entryPoint === n.id) {
         el.classList.add('flow-entry-point');
       }
 
@@ -310,6 +328,36 @@ export function renderNodes(onRender, onSelectNode) {
         }
       };
       body.appendChild(examineBtn);
+    }
+
+    // Add "Trace Flow" button (only in hierarchical mode for traceable node types)
+    if (state.currentMode === 'hierarchical' && !isTerminalNode(n)) {
+      const traceableTypes = ['function', 'method', 'class', 'local-variable', 'parameter', 'constructor'];
+      if (traceableTypes.includes(n.type)) {
+        const traceFlowBtn = document.createElement('button');
+        traceFlowBtn.textContent = 'Trace Flow';
+        traceFlowBtn.className = 'trace-flow-btn';
+        traceFlowBtn.onclick = async (e) => {
+          e.stopPropagation();
+          try {
+            // Import functions from mode-manager
+            const { initializeNodeFlowMode, switchMode } = await import('./mode-manager.js');
+
+            // Initialize node-specific flow mode
+            await initializeNodeFlowMode(n.id, 'forward');
+
+            // Switch to flow mode
+            await switchMode('flow');
+
+            // Re-render
+            onRender();
+          } catch (error) {
+            console.error('Error initializing node flow mode:', error);
+            alert('Error tracing flow: ' + error.message);
+          }
+        };
+        body.appendChild(traceFlowBtn);
+      }
     }
 
     // Add expand/collapse toggle for children (hidden for terminal nodes)

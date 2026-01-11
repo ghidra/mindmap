@@ -1,28 +1,45 @@
-import { getCurrentNodes } from './state.js';
+import { state, getCurrentNodes } from './state.js';
 import { createNode } from './nodes.js';
 
 // Terminal node management
 export const TERMINAL_NODE_ID = 'terminal';
 
 export function getTerminalNode() {
+  // Terminal node is only for hierarchical mode - skip in notes mode
+  if (state.currentMode === 'notes') {
+    return null;
+  }
+
   const nodes = getCurrentNodes();
   let terminalNode = nodes.find(n => n.id === TERMINAL_NODE_ID);
-  
+
   if (!terminalNode) {
-    // Create terminal node if it doesn't exist
-    terminalNode = createNode(50, 50, 'Terminal'); // Default position in top-left area
-    terminalNode.id = TERMINAL_NODE_ID;
-    terminalNode.isTerminal = true;
-    terminalNode.attributes = [];
-    terminalNode.children = []; // Terminal nodes never have children
-    terminalNode.connections = [];
-    terminalNode.expanded = false;
-    terminalNode.attributesExpanded = false;
-    terminalNode.visible = true; // Terminal nodes are now visible
-    terminalNode.color = '#e3f2fd'; // Light blue color to distinguish it
+    // Create terminal node if it doesn't exist using new format
+    terminalNode = {
+      id: TERMINAL_NODE_ID,
+      type: 'terminal', // Use the terminal node type
+      title: 'Terminal',
+      isTerminal: true,
+      x: 50,
+      y: 50,
+      position: { x: 50, y: 50 },
+      size: { width: 200, height: 120 },
+      style: {
+        color: '#1a3a52',
+        borderColor: '#4a90e2',
+        borderWidth: 2
+      },
+      ports: [],
+      attributes: [],
+      children: [], // Terminal nodes never have children
+      connections: [],
+      expanded: false,
+      attributesExpanded: false,
+      visible: true
+    };
     nodes.push(terminalNode);
   }
-  
+
   return terminalNode;
 }
 
@@ -32,11 +49,13 @@ export function isTerminalNode(node) {
 
 export function getTerminalNodeAttributes() {
   const terminalNode = getTerminalNode();
+  if (!terminalNode) return [];
   return terminalNode.attributes || [];
 }
 
 export function addTerminalAttribute(name, type, value) {
   const terminalNode = getTerminalNode();
+  if (!terminalNode) return null;
   if (!terminalNode.attributes) {
     terminalNode.attributes = [];
   }
@@ -56,7 +75,7 @@ export function addTerminalAttribute(name, type, value) {
 
 export function removeTerminalAttribute(attributeId) {
   const terminalNode = getTerminalNode();
-  if (!terminalNode.attributes) return false;
+  if (!terminalNode || !terminalNode.attributes) return false;
   
   const index = terminalNode.attributes.findIndex(attr => attr.id === attributeId);
   if (index !== -1) {
@@ -68,7 +87,7 @@ export function removeTerminalAttribute(attributeId) {
 
 export function updateTerminalAttributeValue(attributeId, value) {
   const terminalNode = getTerminalNode();
-  if (!terminalNode.attributes) return false;
+  if (!terminalNode || !terminalNode.attributes) return false;
   
   const attribute = terminalNode.attributes.find(attr => attr.id === attributeId);
   if (attribute) {
@@ -96,6 +115,8 @@ function validateAttributeValue(type, value) {
 // Position the terminal node in a consistent location
 export function positionTerminalNode() {
   const terminalNode = getTerminalNode();
+  if (!terminalNode) return; // Skip if no terminal node (e.g., notes mode)
+
   const nodes = getCurrentNodes();
   
   // Find the rightmost node to position terminal node to the right
@@ -129,6 +150,11 @@ export function positionTerminalNode() {
 
 // Ensure terminal node exists and is properly initialized
 export function ensureTerminalNode() {
+  // Skip in notes mode - terminal node is not used there
+  if (state.currentMode === 'notes') {
+    return null;
+  }
+
   const terminalNode = getTerminalNode();
   positionTerminalNode();
   return terminalNode;

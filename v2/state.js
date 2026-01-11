@@ -1,19 +1,46 @@
-// Application state management
+// Application state management - Modular node framework
 export const state = {
-  nodes: [],
+  // Core data (mode-agnostic)
+  nodes: [],              // All nodes (flat array, hierarchy stored in node.children)
+  connections: [],        // All connections (separate from nodes)
+  selectedNodes: [],      // Multi-select support
+  groups: [],             // Group metadata
+
+  // Viewport state
+  viewport: {
+    x: 0,                 // Pan X
+    y: 0,                 // Pan Y
+    zoom: 1               // Zoom level (1 = 100%)
+  },
+
+  // Legacy support (will be removed in Phase 8)
   path: [],
   currentMode: 'hierarchical', // 'hierarchical' | 'flow' | 'notes'
-  flowConfig: {
-    layoutDirection: 'top-down', // 'top-down' | 'left-right'
-    entryPoint: null,
-    executionGraph: null // cached execution flow graph
+
+  // Parsing configuration (legacy - to be integrated with node types)
+  parsingConfig: {
+    maxDepth: 6,
+    enableASTParsing: true,
+    astCache: new Map()
   },
-  // Notes mode - separate sketch pad for planning
+
+  flowConfig: {
+    layoutDirection: 'top-down',
+    entryPoint: null,
+    executionGraph: null,
+    flowType: 'entry-point',
+    tracedNode: null,
+    traceDirection: 'forward',
+    traceDepth: 10
+  },
+
+  // Notes mode (legacy - notes will become regular node types)
   notesData: {
     nodes: [],
     connections: []
   },
-  // Canvas panning
+
+  // Legacy pan offset (replaced by viewport)
   panX: 0,
   panY: 0
 };
@@ -295,4 +322,218 @@ export function updateNoteSize(nodeId, width, height) {
     node.height = Math.max(60, height); // Minimum 60px
     saveNotes();
   }
+}
+
+// ============ Modular Framework Functions ============
+
+/**
+ * Add a node to the state (respects current mode and path context)
+ * @param {Object} node - Node to add
+ */
+export function addNode(node) {
+  // In notes mode, add to notes data
+  if (state.currentMode === 'notes') {
+    if (!state.notesData.nodes) {
+      state.notesData.nodes = [];
+    }
+    state.notesData.nodes.push(node);
+    return;
+  }
+
+  // If we're inside a node (path has items), add as child of current context
+  if (state.path.length > 0) {
+    const parentId = state.path[state.path.length - 1];
+    const parentNode = findNode(parentId);
+    if (parentNode) {
+      if (!parentNode.children) {
+        parentNode.children = [];
+      }
+      node.parentId = parentId;
+      node.parent = parentNode;
+      parentNode.children.push(node);
+      return;
+    }
+  }
+  // Otherwise add to root
+  state.nodes.push(node);
+}
+
+/**
+ * Remove a node from the state
+ * @param {string} nodeId - Node ID to remove
+ * @returns {boolean} Whether node was removed
+ */
+export function removeNode(nodeId) {
+  const index = state.nodes.findIndex(n => n.id === nodeId);
+  if (index !== -1) {
+    state.nodes.splice(index, 1);
+    // Also remove any connections involving this node
+    state.connections = state.connections.filter(
+      conn => conn.from.nodeId !== nodeId && conn.to.nodeId !== nodeId
+    );
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Find a node by ID (searches recursively through children)
+ * Also searches notes data when in notes mode
+ * @param {string} nodeId - Node ID
+ * @returns {Object|null} Node or null
+ */
+export function findNode(nodeId) {
+  function searchNodes(nodes) {
+    for (const node of nodes) {
+      if (node.id === nodeId) return node;
+      if (node.children) {
+        const found = searchNodes(node.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  // Search main nodes first
+  const found = searchNodes(state.nodes);
+  if (found) return found;
+
+  // Also search notes data (for notes mode)
+  if (state.notesData?.nodes) {
+    const noteNode = state.notesData.nodes.find(n => n.id === nodeId);
+    if (noteNode) return noteNode;
+  }
+
+  return null;
+}
+
+/**
+ * Add a connection
+ * @param {Object} connection - Connection object
+ */
+export function addConnection(connection) {
+  // Check if connection already exists
+  const exists = state.connections.some(
+    c => c.from.nodeId === connection.from.nodeId &&
+         c.from.portId === connection.from.portId &&
+         c.to.nodeId === connection.to.nodeId &&
+         c.to.portId === connection.to.portId
+  );
+
+  if (!exists) {
+    state.connections.push(connection);
+  }
+}
+
+/**
+ * Remove a connection
+ * @param {string} connectionId - Connection ID
+ * @returns {boolean} Whether connection was removed
+ */
+export function removeConnection(connectionId) {
+  const index = state.connections.findIndex(c => c.id === connectionId);
+  if (index !== -1) {
+    state.connections.splice(index, 1);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Get connections for a specific node
+ * @param {string} nodeId - Node ID
+ * @returns {Array} Array of connections
+ */
+export function getNodeConnections(nodeId) {
+  return state.connections.filter(
+    c => c.from.nodeId === nodeId || c.to.nodeId === nodeId
+  );
+}
+
+/**
+ * Select a node
+ * @param {string} nodeId - Node ID
+ * @param {boolean} multiSelect - Whether to add to selection or replace
+ */
+export function selectNode(nodeId, multiSelect = false) {
+  if (multiSelect) {
+    if (!state.selectedNodes.includes(nodeId)) {
+      state.selectedNodes.push(nodeId);
+    }
+  } else {
+    state.selectedNodes = [nodeId];
+  }
+}
+
+/**
+ * Deselect a node
+ * @param {string} nodeId - Node ID
+ */
+export function deselectNode(nodeId) {
+  const index = state.selectedNodes.indexOf(nodeId);
+  if (index !== -1) {
+    state.selectedNodes.splice(index, 1);
+  }
+}
+
+/**
+ * Clear all selections
+ */
+export function clearSelection() {
+  state.selectedNodes = [];
+}
+
+/**
+ * Check if a node is selected
+ * @param {string} nodeId - Node ID
+ * @returns {boolean}
+ */
+export function isNodeSelected(nodeId) {
+  return state.selectedNodes.includes(nodeId);
+}
+
+/**
+ * Add a group
+ * @param {Object} group - Group object
+ */
+export function addGroup(group) {
+  state.groups.push(group);
+}
+
+/**
+ * Remove a group
+ * @param {string} groupId - Group ID
+ * @returns {boolean} Whether group was removed
+ */
+export function removeGroup(groupId) {
+  const index = state.groups.findIndex(g => g.id === groupId);
+  if (index !== -1) {
+    state.groups.splice(index, 1);
+    // Also clear group references in nodes
+    state.nodes.forEach(node => {
+      if (node.containedIn === groupId) {
+        node.containedIn = null;
+      }
+    });
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Find a group by ID
+ * @param {string} groupId - Group ID
+ * @returns {Object|null} Group or null
+ */
+export function findGroup(groupId) {
+  return state.groups.find(g => g.id === groupId) || null;
+}
+
+/**
+ * Get all nodes in a group
+ * @param {string} groupId - Group ID
+ * @returns {Array} Array of nodes
+ */
+export function getGroupNodes(groupId) {
+  return state.nodes.filter(n => n.containedIn === groupId);
 } 

@@ -378,6 +378,9 @@ function wireEvents() {
 
     // Show flow controls
     flowControls.style.display = 'inline-flex';
+
+    // Update flow mode indicator
+    updateFlowModeIndicator();
   };
 
   // Notes tab
@@ -410,11 +413,60 @@ function wireEvents() {
       state.flowConfig.executionGraph = null;
       await initializeFlowMode();
       render();
+      updateFlowModeIndicator();
     } catch (error) {
       console.error('Error refreshing flow:', error);
       alert('Error refreshing flow: ' + error.message);
     }
   };
+
+  // Clear trace button
+  const clearTraceBtn = document.getElementById('clear-trace-btn');
+  clearTraceBtn.onclick = async () => {
+    try {
+      const { clearNodeTrace } = await import('./mode-manager.js');
+      await clearNodeTrace();
+      render();
+      updateFlowModeIndicator();
+    } catch (error) {
+      console.error('Error clearing trace:', error);
+      alert('Error clearing trace: ' + error.message);
+    }
+  };
+
+  // Update flow mode indicator
+  function updateFlowModeIndicator() {
+    const indicator = document.getElementById('flow-mode-indicator');
+    const clearBtn = document.getElementById('clear-trace-btn');
+
+    if (state.currentMode !== 'flow') {
+      indicator.textContent = '';
+      clearBtn.style.display = 'none';
+      return;
+    }
+
+    if (state.flowConfig.flowType === 'entry-point') {
+      indicator.textContent = 'Entry Point Flow';
+      clearBtn.style.display = 'none';
+    } else if (state.flowConfig.flowType === 'node-trace') {
+      // Find traced node title
+      const findNodeById = (nodes, id) => {
+        for (const node of nodes) {
+          if (node.id === id) return node;
+          if (node.children) {
+            const found = findNodeById(node.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const tracedNode = findNodeById(state.nodes, state.flowConfig.tracedNode);
+      const nodeTitle = tracedNode ? tracedNode.title : 'Unknown';
+      indicator.textContent = `Tracing: ${nodeTitle}`;
+      clearBtn.style.display = 'inline-block';
+    }
+  }
 
   // Initialize mode on load
   if (state.currentMode === 'flow') {

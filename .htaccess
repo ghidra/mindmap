@@ -1,0 +1,10 @@
+# Ensure JavaScript files are served with correct MIME type
+<IfModule mod_mime.c>
+    AddType application/javascript .js
+    AddType text/javascript .js
+</IfModule>
+
+# Enable CORS for local development
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+</IfModule>
