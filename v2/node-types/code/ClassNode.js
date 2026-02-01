@@ -4,35 +4,102 @@
  */
 
 import { BaseNodeType } from '../BaseNodeType.js';
+import { inferDataType } from '../../core/PortSystem.js';
 
 export const ClassNodeType = {
   id: 'class',
   name: 'Class',
   category: 'code',
   icon: '🔷',
-  defaultPorts: [
-    {
-      id: 'extends',
-      side: 'left',
-      type: 'input',
-      position: 0.3,
-      label: 'extends'
-    },
-    {
-      id: 'instantiated-by',
-      side: 'left',
-      type: 'input',
-      position: 0.7,
-      label: 'used by'
-    },
-    {
-      id: 'output',
-      side: 'right',
-      type: 'output',
-      position: 0.5,
-      label: 'provides'
+
+  /**
+   * Generate ports dynamically based on class members (properties)
+   * Supports manual override via node.inputPorts and node.outputPorts arrays
+   * @param {Object} node - The node instance
+   * @returns {Array} Array of port definitions
+   */
+  getPorts: (node) => {
+    const ports = [];
+
+    // Check for manual port override first
+    if (node.inputPorts && node.inputPorts.length > 0) {
+      node.inputPorts.forEach((portDef, idx) => {
+        const name = typeof portDef === 'string' ? portDef : portDef.name;
+        const value = typeof portDef === 'object' ? portDef.value : null;
+        ports.push({
+          id: `input-${name}`,
+          side: 'left',
+          type: 'input',
+          position: (idx + 1) / (node.inputPorts.length + 1),
+          label: name,
+          dataType: inferDataType(value)
+        });
+      });
+    } else {
+      // Collect properties from multiple sources
+      let properties = [];
+
+      // Source 1: node.attributes object (most common for parsed classes)
+      if (node.attributes && typeof node.attributes === 'object' && !Array.isArray(node.attributes)) {
+        properties = Object.entries(node.attributes).map(([name, value]) => ({ name, value }));
+      }
+
+      // Source 2: node.children with type === 'property'
+      if (properties.length === 0 && node.children) {
+        const childProps = node.children.filter(c => c.type === 'property');
+        properties = childProps.map(c => ({ name: c.title || c.name, value: c.value }));
+      }
+
+      // Source 3: node.properties array
+      if (properties.length === 0 && node.properties) {
+        properties = node.properties.map(p =>
+          typeof p === 'string' ? { name: p, value: null } : { name: p.name, value: p.value }
+        );
+      }
+
+      // Create input port for each property
+      properties.forEach((prop, idx) => {
+        if (prop.name) {
+          ports.push({
+            id: `prop-${prop.name}`,
+            side: 'left',
+            type: 'input',
+            position: (idx + 1) / (properties.length + 1),
+            label: prop.name,
+            dataType: inferDataType(prop.value)
+          });
+        }
+      });
     }
-  ],
+
+    // Check for manual output ports override
+    if (node.outputPorts && node.outputPorts.length > 0) {
+      node.outputPorts.forEach((portDef, idx) => {
+        const name = typeof portDef === 'string' ? portDef : portDef.name;
+        const value = typeof portDef === 'object' ? portDef.value : null;
+        ports.push({
+          id: `output-${name}`,
+          side: 'right',
+          type: 'output',
+          position: (idx + 1) / (node.outputPorts.length + 1),
+          label: name,
+          dataType: inferDataType(value)
+        });
+      });
+    } else {
+      // Default output port for class instance
+      ports.push({
+        id: 'instance',
+        side: 'right',
+        type: 'output',
+        position: 0.5,
+        label: 'instance',
+        dataType: 'object'
+      });
+    }
+
+    return ports;
+  },
   defaultStyle: {
     width: 180,
     height: 110,

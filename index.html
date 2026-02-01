@@ -27,13 +27,12 @@
     <!-- Flow mode controls (hidden by default) -->
     <div id="flow-controls" class="flow-controls" style="display: none;">
         <span id="flow-mode-indicator"></span>
-        <label>Layout:</label>
-        <select id="flow-layout-select">
-            <option value="top-down">Top-Down</option>
-            <option value="left-right">Left-Right</option>
-        </select>
-        <button id="refresh-flow-btn">Refresh Flow</button>
-        <button id="clear-trace-btn" style="display: none;">Clear Trace</button>
+        <div class="flow-path-input-container">
+            <input type="text" id="flow-path-input" placeholder="path/to/file.js" />
+            <button id="flow-path-go-btn">Go</button>
+            <button id="flow-back-btn" style="display: none;">Back</button>
+        </div>
+        <button id="clear-trace-btn" style="display: none;">Clear</button>
     </div>
 
     <!-- Breadcrumb trail will be populated here by JS → keeps it *below* the buttons -->

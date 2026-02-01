@@ -93,6 +93,17 @@ export class NodeRenderer {
       classes.push(node.cssClass);
     }
 
+    // Focused flow mode classes
+    if (state.currentMode === 'flow' && state.flowConfig.flowType === 'focused') {
+      if (node.id === state.flowConfig.focusedNode) {
+        classes.push('flow-center-node');
+      } else if (node.flowDirection === 'incoming') {
+        classes.push('flow-incoming');
+      } else if (node.flowDirection === 'outgoing') {
+        classes.push('flow-outgoing');
+      }
+    }
+
     return classes.join(' ');
   }
 
@@ -102,8 +113,16 @@ export class NodeRenderer {
    * @param {HTMLElement} el - Node element
    */
   positionNode(node, el) {
-    const x = node.position?.x ?? node.x ?? 0;
-    const y = node.position?.y ?? node.y ?? 0;
+    // In flow mode, use flowX/flowY if available
+    let x, y;
+    if (state.currentMode === 'flow' && (node.flowX !== undefined || node.flowY !== undefined)) {
+      x = node.flowX ?? node.position?.x ?? node.x ?? 0;
+      y = node.flowY ?? node.position?.y ?? node.y ?? 0;
+    } else {
+      x = node.position?.x ?? node.x ?? 0;
+      y = node.position?.y ?? node.y ?? 0;
+    }
+
     const width = node.size?.width ?? node.width ?? node.style?.width ?? 180;
     const height = node.size?.height ?? node.height ?? node.style?.height ?? 100;
 
@@ -121,6 +140,12 @@ export class NodeRenderer {
       el.style.zIndex = '1';
     } else {
       el.style.zIndex = '1';
+    }
+
+    // Center node in focused flow mode should be above others
+    if (state.currentMode === 'flow' && state.flowConfig.flowType === 'focused' &&
+        node.id === state.flowConfig.focusedNode) {
+      el.style.zIndex = '50';
     }
   }
 
@@ -239,13 +264,28 @@ export class NodeRenderer {
    * @param {HTMLElement} el - Node element
    */
   renderPorts(node, el) {
-    if (!node.ports || node.ports.length === 0) return;
+    // Get ports from node, or fall back to default ports from type definition
+    const typeDef = this.registry.get(node.type);
+    let ports = node.ports;
+
+    // If no custom ports, check for dynamic port generator or use defaults
+    if (!ports || ports.length === 0) {
+      if (typeDef?.getPorts) {
+        // Dynamic port generation based on node data
+        ports = typeDef.getPorts(node);
+      } else {
+        ports = typeDef?.defaultPorts;
+      }
+    }
+
+    if (!ports || ports.length === 0) return;
 
     // Register ports with port system
-    this.portManager.registerPorts(node.id, node.ports);
+    this.portManager.registerPorts(node.id, ports);
 
-    // Calculate positions and render
-    const portPositions = this.portManager.calculateAllPortPositions(node);
+    // Calculate positions and render - use ports array, not node.ports
+    const nodeWithPorts = { ...node, ports };
+    const portPositions = this.portManager.calculateAllPortPositions(nodeWithPorts);
 
     portPositions.forEach(({ port, position }) => {
       const portEl = this.createPortElement(port, position, node);
@@ -269,24 +309,48 @@ export class NodeRenderer {
     portEl.dataset.side = position.side;
     portEl.title = port.label || port.id;
 
-    // Position relative to node
-    const nodeX = node.position?.x ?? node.x ?? 0;
-    const nodeY = node.position?.y ?? node.y ?? 0;
+    // Get node dimensions
+    const nodeWidth = node.size?.width ?? node.width ?? node.style?.width ?? 180;
+    const nodeHeight = node.size?.height ?? node.height ?? node.style?.height ?? 100;
 
-    portEl.style.position = 'absolute';
-    portEl.style.left = `${position.x - nodeX}px`;
-    portEl.style.top = `${position.y - nodeY}px`;
+    // Port size
+    const size = 12;
+    const halfSize = size / 2;
 
-    // Style
-    const size = port.style?.size || 10;
-    portEl.style.width = `${size}px`;
-    portEl.style.height = `${size}px`;
-    portEl.style.backgroundColor = port.style?.color || this.portManager.getDefaultPortColor(port.type);
-    portEl.style.borderRadius = port.style?.shape === 'square' ? '2px' : '50%';
-    portEl.style.border = '2px solid white';
-    portEl.style.transform = 'translate(-50%, -50%)';
-    portEl.style.cursor = 'crosshair';
-    portEl.style.zIndex = '10';
+    // Position port on the edge of the node (half inside, half outside)
+    // Using left/top relative to the node element
+    let left, top;
+
+    switch (port.side) {
+      case 'left':
+        left = -halfSize; // Half outside on left
+        top = nodeHeight * port.position - halfSize;
+        break;
+      case 'right':
+        left = nodeWidth - halfSize; // Half outside on right
+        top = nodeHeight * port.position - halfSize;
+        break;
+      case 'top':
+        left = nodeWidth * port.position - halfSize;
+        top = -halfSize; // Half outside on top
+        break;
+      case 'bottom':
+        left = nodeWidth * port.position - halfSize;
+        top = nodeHeight - halfSize; // Half outside on bottom
+        break;
+      default:
+        left = nodeWidth - halfSize;
+        top = nodeHeight * 0.5 - halfSize;
+    }
+
+    portEl.style.left = `${left}px`;
+    portEl.style.top = `${top}px`;
+
+    // Apply data type color if specified
+    if (port.dataType) {
+      const color = this.portManager.getDataTypeColor(port.dataType);
+      portEl.style.backgroundColor = color;
+    }
 
     // Label (if present)
     if (port.label) {

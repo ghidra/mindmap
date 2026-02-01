@@ -28,10 +28,13 @@ export const state = {
     layoutDirection: 'top-down',
     entryPoint: null,
     executionGraph: null,
-    flowType: 'entry-point',
+    flowType: 'entry-point', // 'entry-point' | 'node-trace' | 'focused'
     tracedNode: null,
     traceDirection: 'forward',
-    traceDepth: 10
+    traceDepth: 10,
+    focusedNode: null,       // ID of center node in focused mode
+    navigationStack: [],     // History for back navigation
+    flowGroups: []           // Directory groups in focused flow mode
   },
 
   // Notes mode (legacy - notes will become regular node types)
@@ -56,28 +59,14 @@ export function save() {
     return value;
   };
 
-  // Serialize execution graph nodes with their original node references
-  let serializedExecutionGraph = null;
-  if (state.flowConfig.executionGraph) {
-    serializedExecutionGraph = {
-      nodes: state.flowConfig.executionGraph.nodes.map(gn => ({
-        id: gn.id,
-        depth: gn.depth,
-        executionOrder: gn.executionOrder,
-        structure: gn.structure
-        // originalNode will be restored by ID reference
-      })),
-      edges: state.flowConfig.executionGraph.edges
-    };
-  }
-
+  // Don't save execution graph - it's computed data that should be regenerated
   const saveData = {
     nodes: state.nodes,
-    currentMode: state.currentMode,
+    currentMode: state.currentMode === 'flow' ? 'hierarchical' : state.currentMode, // Don't persist flow mode
     flowConfig: {
       layoutDirection: state.flowConfig.layoutDirection,
-      entryPoint: state.flowConfig.entryPoint,
-      executionGraph: serializedExecutionGraph
+      entryPoint: state.flowConfig.entryPoint
+      // executionGraph intentionally not saved
     },
     panX: state.panX,
     panY: state.panY,
@@ -126,7 +115,14 @@ export function load() {
         state.flowConfig = {
           layoutDirection: 'top-down',
           entryPoint: null,
-          executionGraph: null
+          executionGraph: null,
+          flowType: 'entry-point',
+          tracedNode: null,
+          traceDirection: 'forward',
+          traceDepth: 10,
+          focusedNode: null,
+          navigationStack: [],
+          flowGroups: []
         };
       } else {
         // New format with mode and config
@@ -135,32 +131,21 @@ export function load() {
         state.panX = saveData.panX || 0;
         state.panY = saveData.panY || 0;
 
-        // Restore execution graph if it was saved
-        let restoredExecutionGraph = null;
-        if (saveData.flowConfig?.executionGraph) {
-          // Reconstruct execution graph by reconnecting node references
-          restoredExecutionGraph = {
-            nodes: saveData.flowConfig.executionGraph.nodes.map(gn => ({
-              id: gn.id,
-              depth: gn.depth,
-              executionOrder: gn.executionOrder,
-              structure: gn.structure,
-              originalNode: findNodeById(state.nodes, gn.id)
-            })),
-            edges: saveData.flowConfig.executionGraph.edges
-          };
-        }
-
+        // Don't restore execution graph - it should be regenerated
         state.flowConfig = {
           layoutDirection: saveData.flowConfig?.layoutDirection || 'top-down',
           entryPoint: saveData.flowConfig?.entryPoint || null,
-          executionGraph: restoredExecutionGraph
+          executionGraph: null,
+          flowType: 'entry-point',
+          tracedNode: null,
+          traceDirection: 'forward',
+          traceDepth: 10,
+          focusedNode: null,
+          navigationStack: [],
+          flowGroups: []
         };
 
         console.log('Loaded state from:', saveData.savedAt || 'unknown time');
-        if (restoredExecutionGraph) {
-          console.log(`Restored execution graph: ${restoredExecutionGraph.nodes.length} nodes, ${restoredExecutionGraph.edges.length} edges`);
-        }
 
         // Also load notes data
         loadNotes();
@@ -172,7 +157,14 @@ export function load() {
       state.flowConfig = {
         layoutDirection: 'top-down',
         entryPoint: null,
-        executionGraph: null
+        executionGraph: null,
+        flowType: 'entry-point',
+        tracedNode: null,
+        traceDirection: 'forward',
+        traceDepth: 10,
+        focusedNode: null,
+        navigationStack: [],
+        flowGroups: []
       };
     }
   }
@@ -379,6 +371,7 @@ export function removeNode(nodeId) {
 /**
  * Find a node by ID (searches recursively through children)
  * Also searches notes data when in notes mode
+ * Also searches execution graph when in flow mode
  * @param {string} nodeId - Node ID
  * @returns {Object|null} Node or null
  */
@@ -402,6 +395,12 @@ export function findNode(nodeId) {
   if (state.notesData?.nodes) {
     const noteNode = state.notesData.nodes.find(n => n.id === nodeId);
     if (noteNode) return noteNode;
+  }
+
+  // Also search execution graph (for flow mode - includes flow groups)
+  if (state.currentMode === 'flow' && state.flowConfig?.executionGraph?.nodes) {
+    const graphNode = state.flowConfig.executionGraph.nodes.find(gn => gn.id === nodeId);
+    if (graphNode?.originalNode) return graphNode.originalNode;
   }
 
   return null;

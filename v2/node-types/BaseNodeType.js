@@ -1,6 +1,32 @@
 /**
  * Base Node Type - Abstract base class for all node type definitions
  * Provides common functionality and default implementations
+ *
+ * ## Port System
+ *
+ * Ports can be defined in three ways (in order of priority):
+ *
+ * 1. **Manual Override**: Set `node.inputPorts` and/or `node.outputPorts` arrays
+ *    - Each entry can be a string (port name) or object {name, value, dataType}
+ *    - Example: node.inputPorts = ['param1', {name: 'param2', value: '42'}]
+ *
+ * 2. **Dynamic Generation**: Define `getPorts(node)` on the type definition
+ *    - Returns array of port definitions based on node data
+ *    - Used by FunctionNode (parameters), ClassNode (properties), FileNode (variables)
+ *
+ * 3. **Static Defaults**: Define `defaultPorts` array on the type definition
+ *    - Used as fallback when no dynamic ports are generated
+ *
+ * ## Data Type Colors
+ *
+ * Ports can have a `dataType` property that determines their color:
+ * - number: Orange (#f39c12)
+ * - string: Green (#27ae60)
+ * - boolean: Purple (#9b59b6)
+ * - array: Blue (#3498db)
+ * - object: Red (#e74c3c)
+ * - function: Teal (#1abc9c)
+ * - unknown: Black (#000000)
  */
 
 export class BaseNodeType {
@@ -70,6 +96,9 @@ export class BaseNodeType {
       style: { ...this.defaultStyle, ...config.style },
       attributes: config.attributes || {},
       containedIn: config.containedIn || null,
+      // Support for manual port override
+      inputPorts: config.inputPorts || null,
+      outputPorts: config.outputPorts || null,
       ...config
     };
 

@@ -124,6 +124,46 @@ export class DetailsPanel {
     section.appendChild(this.createReadOnlyField('Size', `${Math.round(width)} × ${Math.round(height)}`));
 
     container.appendChild(section);
+
+    // Show full path in flow mode
+    if (state.currentMode === 'flow') {
+      const fullPath = this.getNodeFullPath(node);
+      if (fullPath) {
+        const pathSection = this.createSection('File Path');
+        pathSection.appendChild(this.createReadOnlyField('Path', fullPath));
+        container.appendChild(pathSection);
+      }
+    }
+  }
+
+  /**
+   * Get full file path for a node by traversing parents
+   */
+  getNodeFullPath(node) {
+    // If node has filePath, use it directly
+    if (node.filePath) {
+      return node.filePath;
+    }
+
+    // Build path by traversing parent hierarchy
+    const pathParts = [];
+    let current = node;
+
+    while (current) {
+      if (current.title) {
+        pathParts.unshift(current.title);
+      }
+      // Find parent node
+      if (current.parentId) {
+        current = findNode(current.parentId);
+      } else if (current.parent) {
+        current = current.parent;
+      } else {
+        break;
+      }
+    }
+
+    return pathParts.length > 0 ? pathParts.join('/') : null;
   }
 
   /**

@@ -268,7 +268,12 @@ export class EventManager {
 
   startNodeDrag(e, nodeEl) {
     const nodeId = nodeEl.dataset.id;
-    const node = findNode(nodeId);
+    let node = findNode(nodeId);
+    // Also check execution graph for flow mode groups
+    if (!node && state.currentMode === 'flow' && state.flowConfig.executionGraph) {
+      const graphNode = state.flowConfig.executionGraph.nodes.find(gn => gn.id === nodeId);
+      node = graphNode?.originalNode;
+    }
     if (!node) return;
 
     // Don't drag if clicking on input/textarea/button
@@ -308,8 +313,15 @@ export class EventManager {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const nodeX = node.position?.x ?? node.x ?? 0;
-    const nodeY = node.position?.y ?? node.y ?? 0;
+    // In flow mode, use flowX/flowY if available
+    let nodeX, nodeY;
+    if (state.currentMode === 'flow' && (node.flowX !== undefined || node.flowY !== undefined)) {
+      nodeX = node.flowX ?? node.position?.x ?? node.x ?? 0;
+      nodeY = node.flowY ?? node.position?.y ?? node.y ?? 0;
+    } else {
+      nodeX = node.position?.x ?? node.x ?? 0;
+      nodeY = node.position?.y ?? node.y ?? 0;
+    }
 
     this.dragOffset.x = mouseX - nodeX - state.viewport.x;
     this.dragOffset.y = mouseY - nodeY - state.viewport.y;
@@ -319,22 +331,78 @@ export class EventManager {
   }
 
   updateNodeDrag(e) {
-    const node = findNode(this.draggedNodeId);
+    let node = findNode(this.draggedNodeId);
+    // Also check execution graph for flow mode groups
+    if (!node && state.currentMode === 'flow' && state.flowConfig.executionGraph) {
+      const graphNode = state.flowConfig.executionGraph.nodes.find(gn => gn.id === this.draggedNodeId);
+      node = graphNode?.originalNode;
+    }
     if (!node) return;
 
     const rect = this.canvas.getBoundingClientRect();
     const newX = e.clientX - rect.left - this.dragOffset.x - state.viewport.x;
     const newY = e.clientY - rect.top - this.dragOffset.y - state.viewport.y;
 
-    // Calculate delta for group movement
-    const oldX = node.position?.x ?? node.x ?? 0;
-    const oldY = node.position?.y ?? node.y ?? 0;
+    // Calculate delta for group movement - use appropriate coordinates based on mode
+    let oldX, oldY;
+    if (state.currentMode === 'flow' && (node.flowX !== undefined || node.flowY !== undefined)) {
+      oldX = node.flowX ?? node.position?.x ?? node.x ?? 0;
+      oldY = node.flowY ?? node.position?.y ?? node.y ?? 0;
+    } else {
+      oldX = node.position?.x ?? node.x ?? 0;
+      oldY = node.position?.y ?? node.y ?? 0;
+    }
     const deltaX = newX - oldX;
     const deltaY = newY - oldY;
 
-    // If dragging a group, use GroupManager to move group and children
+    // If dragging a group, move group and children
     if (node.type === 'group') {
-      groupManager.moveGroup(this.draggedNodeId, deltaX, deltaY);
+      // In flow mode, update flowX/flowY; otherwise use GroupManager
+      if (state.currentMode === 'flow') {
+        // Update group flow position
+        node.flowX = newX;
+        node.flowY = newY;
+
+        // Update all contained nodes' flow positions
+        if (node.containedNodes && node.containedNodes.length > 0) {
+          node.containedNodes.forEach(nodeId => {
+            let containedNode = findNode(nodeId);
+            // Also check execution graph
+            if (!containedNode && state.flowConfig.executionGraph) {
+              const graphNode = state.flowConfig.executionGraph.nodes.find(gn => gn.id === nodeId);
+              containedNode = graphNode?.originalNode;
+            }
+            if (containedNode) {
+              containedNode.flowX = (containedNode.flowX ?? 0) + deltaX;
+              containedNode.flowY = (containedNode.flowY ?? 0) + deltaY;
+
+              const containedEl = this.canvas.querySelector(`[data-id="${nodeId}"]`);
+              if (containedEl) {
+                containedEl.style.left = `${containedNode.flowX + state.viewport.x}px`;
+                containedEl.style.top = `${containedNode.flowY + state.viewport.y}px`;
+              }
+            }
+          });
+        }
+      } else {
+        groupManager.moveGroup(this.draggedNodeId, deltaX, deltaY);
+
+        // Update all contained nodes' DOM positions
+        if (node.containedNodes && node.containedNodes.length > 0) {
+          node.containedNodes.forEach(nodeId => {
+            const containedNode = findNode(nodeId);
+            if (containedNode) {
+              const containedEl = this.canvas.querySelector(`[data-id="${nodeId}"]`);
+              if (containedEl) {
+                const containedX = containedNode.position?.x ?? containedNode.x ?? 0;
+                const containedY = containedNode.position?.y ?? containedNode.y ?? 0;
+                containedEl.style.left = `${containedX + state.viewport.x}px`;
+                containedEl.style.top = `${containedY + state.viewport.y}px`;
+              }
+            }
+          });
+        }
+      }
 
       // Update group's DOM position
       const groupEl = this.canvas.querySelector(`[data-id="${this.draggedNodeId}"]`);
@@ -342,25 +410,12 @@ export class EventManager {
         groupEl.style.left = `${newX + state.viewport.x}px`;
         groupEl.style.top = `${newY + state.viewport.y}px`;
       }
-
-      // Update all contained nodes' DOM positions
-      if (node.containedNodes && node.containedNodes.length > 0) {
-        node.containedNodes.forEach(nodeId => {
-          const containedNode = findNode(nodeId);
-          if (containedNode) {
-            const containedEl = this.canvas.querySelector(`[data-id="${nodeId}"]`);
-            if (containedEl) {
-              const containedX = containedNode.position?.x ?? containedNode.x ?? 0;
-              const containedY = containedNode.position?.y ?? containedNode.y ?? 0;
-              containedEl.style.left = `${containedX + state.viewport.x}px`;
-              containedEl.style.top = `${containedY + state.viewport.y}px`;
-            }
-          }
-        });
-      }
     } else {
-      // Update node position
-      if (node.position) {
+      // Update node position - in flow mode, update flowX/flowY
+      if (state.currentMode === 'flow') {
+        node.flowX = newX;
+        node.flowY = newY;
+      } else if (node.position) {
         node.position.x = newX;
         node.position.y = newY;
       } else {
@@ -505,10 +560,22 @@ export class EventManager {
     const nodes = this.canvas.querySelectorAll('.node');
     nodes.forEach(nodeEl => {
       const nodeId = nodeEl.dataset.id;
-      const node = findNode(nodeId);
+      // Find node - check execution graph for flow mode
+      let node = findNode(nodeId);
+      if (!node && state.currentMode === 'flow' && state.flowConfig.executionGraph) {
+        const graphNode = state.flowConfig.executionGraph.nodes.find(gn => gn.id === nodeId);
+        node = graphNode?.originalNode;
+      }
       if (node) {
-        const x = node.position?.x ?? node.x ?? 0;
-        const y = node.position?.y ?? node.y ?? 0;
+        // In flow mode, use flowX/flowY if available
+        let x, y;
+        if (state.currentMode === 'flow' && (node.flowX !== undefined || node.flowY !== undefined)) {
+          x = node.flowX ?? node.position?.x ?? node.x ?? 0;
+          y = node.flowY ?? node.position?.y ?? node.y ?? 0;
+        } else {
+          x = node.position?.x ?? node.x ?? 0;
+          y = node.position?.y ?? node.y ?? 0;
+        }
         nodeEl.style.left = `${x + state.viewport.x}px`;
         nodeEl.style.top = `${y + state.viewport.y}px`;
       }

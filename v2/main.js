@@ -102,7 +102,7 @@ function renderNodes() {
     }
   });
 
-  // Render/update nodes
+  // Render/update nodes (groups are now part of nodesToRender in flow mode)
   nodesToRender.forEach(node => {
     nodeRenderer.render(node, canvas);
   });
@@ -124,13 +124,24 @@ function getCurrentNodesForMode() {
     return state.notesData.nodes;
   }
 
-  // For flow mode with execution graph
-  if (state.currentMode === 'flow' && state.flowConfig.executionGraph) {
+  // For flow mode
+  if (state.currentMode === 'flow') {
+    // If no execution graph, return empty (waiting for user to enter a path)
+    if (!state.flowConfig.executionGraph) {
+      return [];
+    }
+
     const allFlowNodes = state.flowConfig.executionGraph.nodes.map(gn => gn.originalNode);
 
     // If no path, return all non-synthetic nodes
     if (state.path.length === 0) {
-      return allFlowNodes.filter(n => !n.syntheticNode);
+      const nodes = allFlowNodes.filter(n => !n.syntheticNode);
+      // Sort so groups render first (behind other nodes)
+      return nodes.sort((a, b) => {
+        if (a.type === 'group' && b.type !== 'group') return -1;
+        if (a.type !== 'group' && b.type === 'group') return 1;
+        return 0;
+      });
     }
 
     // Navigate through path
@@ -160,7 +171,7 @@ renderAll();
 // ============ UI Button Handlers ============
 async function setupUIHandlers() {
   const { parserIntegration } = await import('./ParserIntegrationModule.js');
-  const { switchMode, setLayoutDirection, initializeFlowMode } = await import('./mode-manager.js');
+  const { switchMode, initializeFlowMode, resolveNodeByPath, initializeFocusedFlowMode } = await import('./mode-manager.js');
 
   const clearBtn = document.getElementById('clearBtn');
   const exportBtn = document.getElementById('exportBtn');
@@ -171,9 +182,10 @@ async function setupUIHandlers() {
   const flowTab = document.getElementById('flow-tab');
   const notesTab = document.getElementById('notes-tab');
   const flowControls = document.getElementById('flow-controls');
-  const flowLayoutSelect = document.getElementById('flow-layout-select');
-  const refreshFlowBtn = document.getElementById('refresh-flow-btn');
   const clearTraceBtn = document.getElementById('clear-trace-btn');
+  const flowPathInput = document.getElementById('flow-path-input');
+  const flowPathGoBtn = document.getElementById('flow-path-go-btn');
+  const flowBackBtn = document.getElementById('flow-back-btn');
 
   // Clear button
   clearBtn.onclick = () => {
@@ -184,10 +196,18 @@ async function setupUIHandlers() {
     state.flowConfig = {
       layoutDirection: 'top-down',
       entryPoint: null,
-      executionGraph: null
+      executionGraph: null,
+      flowType: 'entry-point',
+      tracedNode: null,
+      traceDirection: 'forward',
+      traceDepth: 10,
+      focusedNode: null,
+      navigationStack: [],
+      flowGroups: []
     };
     state.panX = 0;
     state.panY = 0;
+    state.viewport = { x: 0, y: 0, zoom: 1 };
     hierarchicalTab.classList.add('active');
     flowTab.classList.remove('active');
     notesTab.classList.remove('active');
@@ -250,6 +270,12 @@ async function setupUIHandlers() {
 
   // Mode tabs
   hierarchicalTab.onclick = async () => {
+    // Clear flow state when leaving flow mode
+    state.flowConfig.executionGraph = null;
+    state.flowConfig.focusedNode = null;
+    state.flowConfig.navigationStack = [];
+    state.flowConfig.flowType = 'entry-point';
+
     await switchMode('hierarchical');
     hierarchicalTab.classList.add('active');
     flowTab.classList.remove('active');
@@ -258,11 +284,22 @@ async function setupUIHandlers() {
   };
 
   flowTab.onclick = async () => {
-    await switchMode('flow');
+    // Clear old flow state when entering flow mode fresh
+    state.flowConfig.executionGraph = null;
+    state.flowConfig.focusedNode = null;
+    state.flowConfig.navigationStack = [];
+    state.flowConfig.flowType = 'entry-point';
+
+    // Don't call switchMode - just set the mode and show controls
+    state.currentMode = 'flow';
+    state.path = [];
+
     flowTab.classList.add('active');
     hierarchicalTab.classList.remove('active');
     notesTab.classList.remove('active');
     flowControls.style.display = 'inline-flex';
+
+    renderAll();
     updateFlowModeIndicator();
   };
 
@@ -277,22 +314,6 @@ async function setupUIHandlers() {
   };
 
   // Flow controls
-  flowLayoutSelect.onchange = async (e) => {
-    await setLayoutDirection(e.target.value);
-  };
-
-  refreshFlowBtn.onclick = async () => {
-    try {
-      state.flowConfig.executionGraph = null;
-      await initializeFlowMode();
-      renderAll();
-      updateFlowModeIndicator();
-    } catch (error) {
-      console.error('Error refreshing flow:', error);
-      alert('Error refreshing flow: ' + error.message);
-    }
-  };
-
   clearTraceBtn.onclick = async () => {
     try {
       const { clearNodeTrace } = await import('./mode-manager.js');
@@ -305,6 +326,102 @@ async function setupUIHandlers() {
     }
   };
 
+  // Flow path input handler
+  flowPathGoBtn.onclick = async () => {
+    const path = flowPathInput.value.trim();
+    if (!path) {
+      alert('Please enter a path (e.g., src/iso/scene.js or src/iso/scene.js:draw)');
+      return;
+    }
+
+    if (state.nodes.length === 0) {
+      alert('No project loaded. Please load a project first using "Load Code".');
+      return;
+    }
+
+    const node = resolveNodeByPath(path);
+    if (!node) {
+      alert('Node not found: ' + path);
+      return;
+    }
+
+    try {
+      // Clear old flow state before initializing new focused flow
+      state.flowConfig.executionGraph = null;
+      state.flowConfig.navigationStack = [];
+
+      await initializeFocusedFlowMode(node.id);
+
+      // Ensure we're in flow mode
+      state.currentMode = 'flow';
+      flowTab.classList.add('active');
+      hierarchicalTab.classList.remove('active');
+      notesTab.classList.remove('active');
+      flowControls.style.display = 'inline-flex';
+
+      renderAll();
+      updateFlowModeIndicator();
+    } catch (error) {
+      console.error('Error initializing focused flow:', error);
+      alert('Error: ' + error.message);
+    }
+  };
+
+  // Enter key in path input
+  flowPathInput.onkeydown = (e) => {
+    if (e.key === 'Enter') {
+      flowPathGoBtn.click();
+    }
+  };
+
+  // Back button handler
+  flowBackBtn.onclick = async () => {
+    if (!state.flowConfig.navigationStack || state.flowConfig.navigationStack.length === 0) {
+      return;
+    }
+
+    const previousNode = state.flowConfig.navigationStack.pop();
+    try {
+      await initializeFocusedFlowMode(previousNode);
+      renderAll();
+      updateFlowModeIndicator();
+    } catch (error) {
+      console.error('Error navigating back:', error);
+      alert('Error: ' + error.message);
+    }
+  };
+
+  // Double-click handler for drill-down in focused flow mode
+  canvas.addEventListener('dblclick', async (e) => {
+    if (state.currentMode !== 'flow' || state.flowConfig.flowType !== 'focused') {
+      return;
+    }
+
+    const nodeEl = e.target.closest('.node');
+    if (!nodeEl) return;
+
+    const nodeId = nodeEl.dataset.id;
+    if (!nodeId || nodeId === state.flowConfig.focusedNode) {
+      return; // Don't drill down to the same node
+    }
+
+    try {
+      // Push current center to navigation stack
+      if (!state.flowConfig.navigationStack) {
+        state.flowConfig.navigationStack = [];
+      }
+      state.flowConfig.navigationStack.push(state.flowConfig.focusedNode);
+
+      // Make clicked node the new center
+      await initializeFocusedFlowMode(nodeId);
+      renderAll();
+      updateFlowModeIndicator();
+    } catch (error) {
+      console.error('Error drilling down:', error);
+      alert('Error: ' + error.message);
+    }
+  });
+
   // Always enable dark mode
   document.body.classList.add('dark-mode');
 
@@ -314,7 +431,6 @@ async function setupUIHandlers() {
     hierarchicalTab.classList.remove('active');
     notesTab.classList.remove('active');
     flowControls.style.display = 'inline-flex';
-    flowLayoutSelect.value = state.flowConfig.layoutDirection;
   } else if (state.currentMode === 'notes') {
     notesTab.classList.add('active');
     hierarchicalTab.classList.remove('active');
@@ -330,31 +446,50 @@ async function setupUIHandlers() {
   function updateFlowModeIndicator() {
     const indicator = document.getElementById('flow-mode-indicator');
     const clearBtn = document.getElementById('clear-trace-btn');
+    const backBtn = document.getElementById('flow-back-btn');
 
     if (state.currentMode !== 'flow') {
       indicator.textContent = '';
       clearBtn.style.display = 'none';
+      backBtn.style.display = 'none';
       return;
     }
 
-    if (state.flowConfig.flowType === 'entry-point') {
-      indicator.textContent = 'Entry Point Flow';
-      clearBtn.style.display = 'none';
-    } else if (state.flowConfig.flowType === 'node-trace') {
-      const findNodeById = (nodes, id) => {
-        for (const node of nodes) {
-          if (node.id === id) return node;
-          if (node.children) {
-            const found = findNodeById(node.children, id);
-            if (found) return found;
-          }
+    const findNodeById = (nodes, id) => {
+      for (const node of nodes) {
+        if (node.id === id) return node;
+        if (node.children) {
+          const found = findNodeById(node.children, id);
+          if (found) return found;
         }
-        return null;
-      };
-      const tracedNode = findNodeById(state.nodes, state.flowConfig.tracedNode);
-      const nodeTitle = tracedNode ? tracedNode.title : 'Unknown';
-      indicator.textContent = `Tracing: ${nodeTitle}`;
+        if (node.childNodes) {
+          const found = findNodeById(node.childNodes, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    // If no execution graph, show prompt
+    if (!state.flowConfig.executionGraph) {
+      indicator.textContent = 'Enter a file path to explore';
+      clearBtn.style.display = 'none';
+      backBtn.style.display = 'none';
+      return;
+    }
+
+    if (state.flowConfig.flowType === 'focused') {
+      const focusedNode = findNodeById(state.nodes, state.flowConfig.focusedNode);
+      const nodeTitle = focusedNode ? focusedNode.title : 'Unknown';
+      indicator.textContent = `Focus: ${nodeTitle}`;
       clearBtn.style.display = 'inline-block';
+      // Show back button if there's navigation history
+      backBtn.style.display = (state.flowConfig.navigationStack && state.flowConfig.navigationStack.length > 0)
+        ? 'inline-block' : 'none';
+    } else {
+      indicator.textContent = '';
+      clearBtn.style.display = 'none';
+      backBtn.style.display = 'none';
     }
   }
 }

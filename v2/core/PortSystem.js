@@ -3,6 +3,52 @@
  * Handles orientation calculation for bezier curve connections
  */
 
+// Data type colors for typed ports
+const DATA_TYPE_COLORS = {
+  number: '#f39c12',    // Orange
+  string: '#27ae60',    // Green
+  boolean: '#9b59b6',   // Purple
+  array: '#3498db',     // Blue
+  object: '#e74c3c',    // Red
+  function: '#1abc9c',  // Teal
+  unknown: '#000000'    // Black (polymorphic)
+};
+
+/**
+ * Infer data type from a value string
+ * @param {*} value - Value to analyze
+ * @returns {string} Inferred type name
+ */
+export function inferDataType(value) {
+  if (value === null || value === undefined) return 'unknown';
+
+  const str = String(value).trim();
+  if (str === '') return 'unknown';
+
+  // Number (but not quoted strings that look like numbers)
+  if (!isNaN(Number(str)) && !str.startsWith("'") && !str.startsWith('"')) {
+    return 'number';
+  }
+
+  // Boolean
+  if (str === 'true' || str === 'false') return 'boolean';
+
+  // Array
+  if (str.startsWith('[')) return 'array';
+
+  // Object (literal or instantiation)
+  if (str.startsWith('{') || str.startsWith('new ')) return 'object';
+
+  // String (quoted)
+  if (str.startsWith("'") || str.startsWith('"') || str.startsWith('`')) return 'string';
+
+  // Function
+  if (str.includes('=>') || str.startsWith('function')) return 'function';
+
+  // Unknown/polymorphic
+  return 'unknown';
+}
+
 export class PortSystem {
   constructor() {
     this.ports = new Map(); // Map of nodeId -> array of ports
@@ -173,6 +219,15 @@ export class PortSystem {
       default:
         return '#6c757d'; // Gray
     }
+  }
+
+  /**
+   * Get color for a data type
+   * @param {string} dataType - Data type name
+   * @returns {string} Hex color
+   */
+  getDataTypeColor(dataType) {
+    return DATA_TYPE_COLORS[dataType] || DATA_TYPE_COLORS.unknown;
   }
 
   /**

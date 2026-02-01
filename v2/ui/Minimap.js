@@ -125,8 +125,10 @@ export class Minimap {
 
     // Draw nodes
     nodes.forEach(node => {
-      const x = (node.position?.x ?? node.x ?? 0) * this.scale + offsetX;
-      const y = (node.position?.y ?? node.y ?? 0) * this.scale + offsetY;
+      // Use flowX/flowY in flow mode, otherwise regular x/y
+      const useFlowCoords = state.currentMode === 'flow';
+      const x = (useFlowCoords ? (node.flowX ?? node.x ?? 0) : (node.position?.x ?? node.x ?? 0)) * this.scale + offsetX;
+      const y = (useFlowCoords ? (node.flowY ?? node.y ?? 0) : (node.position?.y ?? node.y ?? 0)) * this.scale + offsetY;
       const width = (node.size?.width ?? node.width ?? 180) * this.scale;
       const height = (node.size?.height ?? node.height ?? 100) * this.scale;
 
@@ -245,9 +247,12 @@ export class Minimap {
     let minX = Infinity, minY = Infinity;
     let maxX = -Infinity, maxY = -Infinity;
 
+    // Use flowX/flowY in flow mode
+    const useFlowCoords = state.currentMode === 'flow';
+
     nodes.forEach(node => {
-      const x = node.position?.x ?? node.x ?? 0;
-      const y = node.position?.y ?? node.y ?? 0;
+      const x = useFlowCoords ? (node.flowX ?? node.x ?? 0) : (node.position?.x ?? node.x ?? 0);
+      const y = useFlowCoords ? (node.flowY ?? node.y ?? 0) : (node.position?.y ?? node.y ?? 0);
       const width = node.size?.width ?? node.width ?? 180;
       const height = node.size?.height ?? node.height ?? 100;
 
