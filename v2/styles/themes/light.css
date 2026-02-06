@@ -1,0 +1,66 @@
+/**
+ * Light Theme
+ *
+ * Default light mode styles for the mindmap application.
+ * These are the base styles, so this file mainly exists for theme switching.
+ */
+
+/* Light mode is the default - no body class required */
+
+/* =============== Color Variables ================= */
+:root {
+  --bg-primary: #f0f0f0;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8f8f8;
+
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+
+  --border-primary: #cccccc;
+  --border-secondary: #dddddd;
+  --border-light: #eeeeee;
+
+  --accent-blue: #007bff;
+  --accent-green: #28a745;
+  --accent-red: #dc3545;
+  --accent-yellow: #ffc107;
+  --accent-cyan: #17a2b8;
+
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --shadow-medium: rgba(0, 0, 0, 0.2);
+}
+
+/* =============== Light Mode Overrides ================= */
+body:not(.dark-mode) {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body:not(.dark-mode) #controls {
+  background: var(--bg-secondary);
+}
+
+body:not(.dark-mode) #canvas {
+  background: var(--bg-primary);
+}
+
+body:not(.dark-mode) .node {
+  background: var(--bg-secondary);
+  border-color: var(--border-primary);
+}
+
+body:not(.dark-mode) .node-header {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-secondary);
+}
+
+body:not(.dark-mode) #attributes-panel {
+  background: var(--bg-secondary);
+  border-left-color: var(--border-primary);
+}
+
+body:not(.dark-mode) .panel-header {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-light);
+}

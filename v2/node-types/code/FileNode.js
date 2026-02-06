@@ -1,29 +1,75 @@
 /**
  * File Node - Represents a code file
+ *
  * Can have hierarchical children (classes, functions, etc.)
+ * Dynamically generates ports based on file contents.
+ *
+ * @extends BaseNodeType
  */
 
 import { BaseNodeType } from '../BaseNodeType.js';
 import { inferDataType } from '../../core/PortSystem.js';
 
-export const FileNodeType = {
-  id: 'file',
-  name: 'File',
-  category: 'code',
-  icon: '📄',
+/**
+ * File Node Type class.
+ */
+export class FileNode extends BaseNodeType {
+  // =========================================================================
+  // Static Properties
+  // =========================================================================
+
+  static id = 'file';
+  static displayName = 'File';
+  static category = 'code';
+  static icon = '📄';
+
+  static defaultPorts = [
+    {
+      id: 'exports',
+      side: 'right',
+      type: 'output',
+      position: 0.5,
+      label: 'exports',
+      dataType: 'object'
+    }
+  ];
+
+  static defaultStyle = {
+    width: 180,
+    height: 100,
+    color: '#3a3a3a',
+    borderColor: '#555',
+    borderWidth: 2,
+    borderRadius: 4
+  };
+
+  static features = {
+    canHaveChildren: true,
+    canHaveAttributes: true,
+    canResize: false,
+    canContainNodes: false,
+    canCollapse: true,
+    canEdit: true
+  };
+
+  // =========================================================================
+  // Port Generation
+  // =========================================================================
 
   /**
-   * Generate ports dynamically based on file contents
-   * For JS files without classes, expose top-level variables as input ports
-   * Supports manual override via node.inputPorts and node.outputPorts arrays
+   * Generate ports dynamically based on file contents.
+   *
+   * For JS files without classes, expose top-level variables as input ports.
+   * Supports manual override via node.inputPorts and node.outputPorts arrays.
+   *
    * @param {Object} node - The node instance
    * @returns {Array} Array of port definitions
    */
-  getPorts: (node) => {
+  static getPorts(node) {
     const ports = [];
     const children = node.children || [];
 
-    // Check for manual port override first
+    // Check for manual input port override first
     if (node.inputPorts && node.inputPorts.length > 0) {
       node.inputPorts.forEach((portDef, idx) => {
         const name = typeof portDef === 'string' ? portDef : portDef.name;
@@ -106,22 +152,19 @@ export const FileNodeType = {
     }
 
     return ports;
-  },
-  defaultStyle: {
-    width: 180,
-    height: 100,
-    color: '#3a3a3a',
-    borderColor: '#555',
-    borderWidth: 2,
-    borderRadius: 4
-  },
-  features: {
-    canHaveChildren: true,      // Can contain classes, functions, etc.
-    canHaveAttributes: true,     // Can have file-level attributes
-    canResize: false,
-    canContainNodes: false
-  },
-  renderContent: (node, container) => {
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+
+  /**
+   * Render file node content.
+   *
+   * @param {Object} node - The node instance
+   * @param {HTMLElement} container - Container element
+   */
+  static renderContent(node, container) {
     const content = document.createElement('div');
     content.className = 'file-node-content';
 
@@ -152,4 +195,21 @@ export const FileNodeType = {
 
     container.appendChild(content);
   }
-};
+
+  // =========================================================================
+  // Behavior
+  // =========================================================================
+
+  /**
+   * Handle double-click to navigate into file.
+   *
+   * @param {Object} node - The node instance
+   * @param {Event} event - Click event
+   */
+  static onDoubleClick(node, event) {
+    // Navigation handled by event manager
+  }
+}
+
+// Export as object for backwards compatibility
+export const FileNodeType = FileNode;

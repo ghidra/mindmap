@@ -1,33 +1,75 @@
 /**
  * Keyboard Shortcuts - Global keyboard shortcuts for the application
+ *
+ * This module registers action handlers with ShortcutManager,
+ * enabling customizable key bindings while maintaining the application logic.
+ *
+ * Includes undo/redo support via CommandManager.
  */
 
 import { state, save, clearSelection } from '../state.js';
 import { nodeCreator } from '../ui/NodeCreator.js';
 import { detailsPanel } from '../ui/DetailsPanel.js';
 import { eventManager } from './EventManager.js';
+import { commandManager } from '../commands/CommandManager.js';
+import { shortcutHints } from '../ui/ShortcutHints.js';
+import { shortcutManager } from '../settings/ShortcutManager.js';
+import { settingsPanel } from '../settings/SettingsPanel.js';
+import { themeManager } from '../ui/ThemeManager.js';
 
 export class KeyboardShortcuts {
   constructor() {
+    /**
+     * Legacy shortcuts map for backwards compatibility.
+     * Used by ShortcutHints to display shortcuts.
+     * @type {Map}
+     */
     this.shortcuts = new Map();
+
+    /**
+     * Whether shortcuts are enabled.
+     * @type {boolean}
+     */
     this.enabled = true;
   }
 
   /**
-   * Initialize keyboard shortcuts
+   * Initialize keyboard shortcuts.
+   * Registers all handlers with ShortcutManager.
    */
   init() {
-    this.registerDefaultShortcuts();
-    document.addEventListener('keydown', this.handleKeyDown.bind(this));
-    console.log('KeyboardShortcuts initialized');
+    // Initialize ShortcutManager
+    shortcutManager.init();
+
+    // Register all action handlers
+    this.registerHandlers();
+
+    // Initialize shortcut hints modal
+    shortcutHints.init(this);
+
+    // Initialize settings panel
+    settingsPanel.init();
+
+    // Initialize theme manager
+    themeManager.init();
+
+    // Sync legacy shortcuts map for hints display
+    this._syncLegacyShortcuts();
+
+    // Listen for shortcut changes to update legacy map
+    shortcutManager.onChange(() => {
+      this._syncLegacyShortcuts();
+    });
+
+    console.log('KeyboardShortcuts initialized with ShortcutManager');
   }
 
   /**
-   * Register default shortcuts
+   * Register all action handlers with ShortcutManager.
    */
-  registerDefaultShortcuts() {
+  registerHandlers() {
     // Node creation
-    this.register('n', 'Create new node', (e) => {
+    shortcutManager.register('newNode', (e) => {
       const canvas = document.getElementById('canvas');
       const rect = canvas.getBoundingClientRect();
       const x = (rect.width / 2) - state.viewport.x;
@@ -41,27 +83,14 @@ export class KeyboardShortcuts {
     });
 
     // Delete selected nodes
-    this.register('Delete', 'Delete selected nodes', (e) => {
+    shortcutManager.register('delete', (e) => {
       if (state.selectedNodes.length > 0) {
-        const { removeNode } = require('../state.js');
-        const { nodeRenderer } = require('./NodeRenderer.js');
-
-        state.selectedNodes.forEach(nodeId => {
-          removeNode(nodeId);
-          nodeRenderer.removeRenderedNode(nodeId);
-        });
-
-        clearSelection();
-        save();
-
-        if (eventManager.onRenderNeeded) {
-          eventManager.onRenderNeeded();
-        }
+        eventManager.deleteSelectedNodes();
       }
     });
 
-    // Deselect all
-    this.register('Escape', 'Clear selection', (e) => {
+    // Clear selection
+    shortcutManager.register('clearSelection', (e) => {
       clearSelection();
       detailsPanel.hide();
 
@@ -71,27 +100,39 @@ export class KeyboardShortcuts {
     });
 
     // Save
-    this.register('ctrl+s', 'Save', (e) => {
-      e.preventDefault();
+    shortcutManager.register('save', (e) => {
       save();
       console.log('💾 Saved');
     });
 
-    // Undo (placeholder)
-    this.register('ctrl+z', 'Undo', (e) => {
-      e.preventDefault();
-      console.log('Undo not yet implemented');
+    // Undo
+    shortcutManager.register('undo', (e) => {
+      if (commandManager.canUndo()) {
+        const description = commandManager.getUndoDescription();
+        const command = commandManager.undo();
+        if (command) {
+          console.log(`↩️ Undo: ${description}`);
+          if (eventManager.onRenderNeeded) {
+            eventManager.onRenderNeeded();
+          }
+        }
+      } else {
+        console.log('Nothing to undo');
+      }
     });
 
-    // Redo (placeholder)
-    this.register('ctrl+y', 'Redo', (e) => {
-      e.preventDefault();
-      console.log('Redo not yet implemented');
+    // Redo (primary)
+    shortcutManager.register('redo', (e) => {
+      this._doRedo();
+    });
+
+    // Redo (alternative)
+    shortcutManager.register('redoAlt', (e) => {
+      this._doRedo();
     });
 
     // Select all
-    this.register('ctrl+a', 'Select all nodes', (e) => {
-      e.preventDefault();
+    shortcutManager.register('selectAll', (e) => {
       state.selectedNodes = state.nodes.map(n => n.id);
 
       if (eventManager.onRenderNeeded) {
@@ -99,14 +140,13 @@ export class KeyboardShortcuts {
       }
     });
 
-    // Duplicate (placeholder)
-    this.register('ctrl+d', 'Duplicate selected', (e) => {
-      e.preventDefault();
+    // Duplicate
+    shortcutManager.register('duplicate', (e) => {
       console.log('Duplicate not yet implemented');
     });
 
     // Toggle details panel
-    this.register('i', 'Toggle details panel', (e) => {
+    shortcutManager.register('toggleDetails', (e) => {
       if (state.selectedNodes.length === 1) {
         if (detailsPanel.panel.classList.contains('visible')) {
           detailsPanel.hide();
@@ -116,9 +156,13 @@ export class KeyboardShortcuts {
       }
     });
 
+    // Toggle settings panel
+    shortcutManager.register('toggleSettings', (e) => {
+      settingsPanel.toggle();
+    });
+
     // Zoom in
-    this.register('ctrl+=', 'Zoom in', (e) => {
-      e.preventDefault();
+    shortcutManager.register('zoomIn', (e) => {
       state.viewport.zoom = Math.min(state.viewport.zoom * 1.1, 3);
 
       if (eventManager.onRenderNeeded) {
@@ -127,8 +171,7 @@ export class KeyboardShortcuts {
     });
 
     // Zoom out
-    this.register('ctrl+-', 'Zoom out', (e) => {
-      e.preventDefault();
+    shortcutManager.register('zoomOut', (e) => {
       state.viewport.zoom = Math.max(state.viewport.zoom / 1.1, 0.3);
 
       if (eventManager.onRenderNeeded) {
@@ -137,8 +180,7 @@ export class KeyboardShortcuts {
     });
 
     // Reset zoom
-    this.register('ctrl+0', 'Reset zoom', (e) => {
-      e.preventDefault();
+    shortcutManager.register('zoomReset', (e) => {
       state.viewport.zoom = 1;
 
       if (eventManager.onRenderNeeded) {
@@ -147,7 +189,7 @@ export class KeyboardShortcuts {
     });
 
     // Center view
-    this.register('c', 'Center view', (e) => {
+    shortcutManager.register('centerView', (e) => {
       state.viewport.x = 0;
       state.viewport.y = 0;
 
@@ -157,18 +199,129 @@ export class KeyboardShortcuts {
     });
 
     // Show keyboard shortcuts help
-    this.register('?', 'Show keyboard shortcuts', (e) => {
+    shortcutManager.register('showHelp', (e) => {
       this.showHelp();
+    });
+
+    // Toggle theme
+    shortcutManager.register('toggleTheme', (e) => {
+      themeManager.toggle();
+    });
+
+    // Mode switching (handlers can be added later by mode-manager)
+    shortcutManager.register('modeHierarchical', (e) => {
+      this._switchMode('hierarchical');
+    });
+
+    shortcutManager.register('modeFlow', (e) => {
+      this._switchMode('flow');
+    });
+
+    shortcutManager.register('modeNotes', (e) => {
+      this._switchMode('notes');
+    });
+
+    // Navigate up in hierarchy
+    shortcutManager.register('navigateUp', (e) => {
+      // Will be handled by hierarchical mode
+      if (state.path && state.path.length > 0) {
+        state.path.pop();
+        if (eventManager.onRenderNeeded) {
+          eventManager.onRenderNeeded();
+        }
+      }
     });
   }
 
   /**
-   * Register a keyboard shortcut
-   * @param {string} key - Key combination (e.g., 'ctrl+s', 'Delete')
+   * Perform redo action.
+   * @private
+   */
+  _doRedo() {
+    if (commandManager.canRedo()) {
+      const description = commandManager.getRedoDescription();
+      const command = commandManager.redo();
+      if (command) {
+        console.log(`↪️ Redo: ${description}`);
+        if (eventManager.onRenderNeeded) {
+          eventManager.onRenderNeeded();
+        }
+      }
+    } else {
+      console.log('Nothing to redo');
+    }
+  }
+
+  /**
+   * Switch to a different mode.
+   *
+   * @param {string} modeName - Mode to switch to
+   * @private
+   */
+  _switchMode(modeName) {
+    // This will be overridden or connected to mode-manager
+    const modeRadios = document.querySelectorAll(`input[name="mode"][value="${modeName}"]`);
+    if (modeRadios.length > 0) {
+      modeRadios[0].checked = true;
+      modeRadios[0].dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  /**
+   * Sync legacy shortcuts map with ShortcutManager bindings.
+   * Used for backwards compatibility with ShortcutHints.
+   * @private
+   */
+  _syncLegacyShortcuts() {
+    this.shortcuts.clear();
+
+    const allInfo = shortcutManager.getAllInfo();
+    for (const [action, info] of Object.entries(allInfo)) {
+      const binding = shortcutManager.getBinding(action);
+      if (binding) {
+        this.shortcuts.set(binding.toLowerCase(), {
+          key: binding,
+          description: info.description,
+          handler: () => {} // Placeholder - actual handling done by ShortcutManager
+        });
+      }
+    }
+  }
+
+  /**
+   * Show keyboard shortcuts help.
+   */
+  showHelp() {
+    shortcutHints.toggle();
+  }
+
+  /**
+   * Enable shortcuts.
+   */
+  enable() {
+    this.enabled = true;
+    shortcutManager.enable();
+  }
+
+  /**
+   * Disable shortcuts.
+   */
+  disable() {
+    this.enabled = false;
+    shortcutManager.disable();
+  }
+
+  /**
+   * Register a keyboard shortcut (legacy method).
+   * For backwards compatibility - use shortcutManager.register() for new code.
+   *
+   * @param {string} key - Key combination
    * @param {string} description - Human-readable description
    * @param {Function} handler - Handler function
+   * @deprecated Use shortcutManager.register() instead
    */
   register(key, description, handler) {
+    console.warn('KeyboardShortcuts.register() is deprecated. Use shortcutManager.register() instead.');
     this.shortcuts.set(key.toLowerCase(), {
       key,
       description,
@@ -177,79 +330,13 @@ export class KeyboardShortcuts {
   }
 
   /**
-   * Handle keydown events
-   */
-  handleKeyDown(e) {
-    if (!this.enabled) return;
-
-    // Don't intercept if typing in input/textarea
-    const activeElement = document.activeElement;
-    if (activeElement && (
-      activeElement.tagName === 'INPUT' ||
-      activeElement.tagName === 'TEXTAREA' ||
-      activeElement.isContentEditable
-    )) {
-      // Exception: allow Escape and Ctrl+S even in inputs
-      if (e.key !== 'Escape' && !(e.ctrlKey && e.key === 's')) {
-        return;
-      }
-    }
-
-    // Build key string
-    let keyString = '';
-    if (e.ctrlKey || e.metaKey) keyString += 'ctrl+';
-    if (e.shiftKey) keyString += 'shift+';
-    if (e.altKey) keyString += 'alt+';
-    keyString += e.key.toLowerCase();
-
-    // Find and execute shortcut
-    const shortcut = this.shortcuts.get(keyString);
-    if (shortcut) {
-      shortcut.handler(e);
-    }
-  }
-
-  /**
-   * Show keyboard shortcuts help
-   */
-  showHelp() {
-    const shortcuts = Array.from(this.shortcuts.values());
-
-    const helpText = shortcuts.map(s => {
-      const keyDisplay = s.key
-        .replace('ctrl+', '⌘ ')
-        .replace('shift+', '⇧ ')
-        .replace('alt+', '⌥ ')
-        .toUpperCase();
-
-      return `${keyDisplay.padEnd(20)} ${s.description}`;
-    }).join('\n');
-
-    console.log('\n=== Keyboard Shortcuts ===\n' + helpText + '\n');
-
-    // Could also show a modal here
-    alert('Keyboard Shortcuts:\n\n' + helpText);
-  }
-
-  /**
-   * Enable shortcuts
-   */
-  enable() {
-    this.enabled = true;
-  }
-
-  /**
-   * Disable shortcuts
-   */
-  disable() {
-    this.enabled = false;
-  }
-
-  /**
-   * Unregister a shortcut
+   * Unregister a shortcut (legacy method).
+   *
    * @param {string} key - Key combination
+   * @deprecated Use shortcutManager.unregister() instead
    */
   unregister(key) {
+    console.warn('KeyboardShortcuts.unregister() is deprecated.');
     this.shortcuts.delete(key.toLowerCase());
   }
 }

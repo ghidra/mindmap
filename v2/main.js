@@ -11,6 +11,14 @@ import { detailsPanel } from './ui/DetailsPanel.js';
 import { keyboardShortcuts } from './core/KeyboardShortcuts.js';
 import { minimap } from './ui/Minimap.js';
 
+// Command system for undo/redo
+import { commandManager } from './commands/CommandManager.js';
+
+// Settings and theme
+import { settingsPanel } from './settings/SettingsPanel.js';
+import { themeManager } from './ui/ThemeManager.js';
+import { shortcutHints } from './ui/ShortcutHints.js';
+
 // Import legacy systems for backward compatibility during transition
 import { updateBreadcrumb } from './ui.js';
 
@@ -187,6 +195,39 @@ async function setupUIHandlers() {
   const flowPathGoBtn = document.getElementById('flow-path-go-btn');
   const flowBackBtn = document.getElementById('flow-back-btn');
 
+  // Undo/Redo buttons
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+
+  // Set up undo/redo button handlers
+  undoBtn.onclick = () => {
+    if (commandManager.canUndo()) {
+      const description = commandManager.getUndoDescription();
+      commandManager.undo();
+      console.log(`↩️ Undo: ${description}`);
+      renderAll();
+    }
+  };
+
+  redoBtn.onclick = () => {
+    if (commandManager.canRedo()) {
+      const description = commandManager.getRedoDescription();
+      commandManager.redo();
+      console.log(`↪️ Redo: ${description}`);
+      renderAll();
+    }
+  };
+
+  // Set up state change callback to update button states
+  commandManager.setStateChangeCallback(({ canUndo, canRedo, undoDescription, redoDescription }) => {
+    undoBtn.disabled = !canUndo;
+    redoBtn.disabled = !canRedo;
+
+    // Update tooltips with action descriptions
+    undoBtn.title = canUndo ? `Undo: ${undoDescription} (Ctrl+Z)` : 'Nothing to undo (Ctrl+Z)';
+    redoBtn.title = canRedo ? `Redo: ${redoDescription} (Ctrl+Y)` : 'Nothing to redo (Ctrl+Y)';
+  });
+
   // Clear button
   clearBtn.onclick = () => {
     localStorage.removeItem('mindmap');
@@ -212,6 +253,8 @@ async function setupUIHandlers() {
     flowTab.classList.remove('active');
     notesTab.classList.remove('active');
     flowControls.style.display = 'none';
+    // Clear command history when map is cleared
+    commandManager.clear();
     renderAll();
   };
 
@@ -422,8 +465,8 @@ async function setupUIHandlers() {
     }
   });
 
-  // Always enable dark mode
-  document.body.classList.add('dark-mode');
+  // Set up toolbar right buttons
+  setupToolbarRightButtons();
 
   // Initialize mode UI
   if (state.currentMode === 'flow') {
@@ -491,5 +534,46 @@ async function setupUIHandlers() {
       clearBtn.style.display = 'none';
       backBtn.style.display = 'none';
     }
+  }
+}
+
+// ============ Toolbar Right Buttons ============
+function setupToolbarRightButtons() {
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  const settingsBtn = document.getElementById('settings-btn');
+  const helpBtn = document.getElementById('help-btn');
+
+  // Theme toggle button
+  if (themeToggleBtn) {
+    // Set initial icon
+    const updateThemeIcon = () => {
+      themeToggleBtn.textContent = themeManager.getIcon();
+      themeToggleBtn.title = `Toggle theme (${themeManager.getLabel()})`;
+    };
+
+    updateThemeIcon();
+
+    themeToggleBtn.onclick = () => {
+      themeManager.toggle();
+    };
+
+    // Update icon when theme changes
+    themeManager.onChange(() => {
+      updateThemeIcon();
+    });
+  }
+
+  // Settings button
+  if (settingsBtn) {
+    settingsBtn.onclick = () => {
+      settingsPanel.toggle();
+    };
+  }
+
+  // Help button
+  if (helpBtn) {
+    helpBtn.onclick = () => {
+      shortcutHints.toggle();
+    };
   }
 }

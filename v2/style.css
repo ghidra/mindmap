@@ -833,6 +833,60 @@ body.dark-mode .port.port-bidirectional {
 .child-list li{margin:4px 0;display:flex;align-items:center;gap:4px}
 .child-list li span{flex:1 1 auto}
 
+/* =============== Undo/Redo Buttons ================= */
+.toolbar-separator {
+  display: inline-block;
+  width: 1px;
+  height: 24px;
+  background: #ddd;
+  margin: 0 4px;
+  vertical-align: middle;
+}
+
+.toolbar-btn {
+  padding: 4px 10px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f8f8f8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #aaa;
+}
+
+.toolbar-btn:active:not(:disabled) {
+  background: #ddd;
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dark mode support */
+body.dark-mode .toolbar-separator {
+  background: #505050;
+}
+
+body.dark-mode .toolbar-btn {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border-color: #505050;
+}
+
+body.dark-mode .toolbar-btn:hover:not(:disabled) {
+  background: #454545;
+  border-color: #606060;
+}
+
+body.dark-mode .toolbar-btn:disabled {
+  opacity: 0.4;
+}
+
 /* =============== Flow Mode ================= */
 /* Mode tabs */
 .mode-tabs{

@@ -1,16 +1,28 @@
 /**
  * Shape Node - Visual container with configurable shape
- * Can be used for grouping or visual organization
+ *
+ * Can be used for grouping or visual organization.
+ * Supports rectangle, circle, diamond, and hexagon shapes.
+ *
+ * @extends BaseNodeType
  */
 
 import { BaseNodeType } from '../BaseNodeType.js';
 
-export const ShapeNodeType = {
-  id: 'shape',
-  name: 'Shape',
-  category: 'organization',
-  icon: '⬜',
-  defaultPorts: [
+/**
+ * Shape Node Type class.
+ */
+export class ShapeNode extends BaseNodeType {
+  // =========================================================================
+  // Static Properties
+  // =========================================================================
+
+  static id = 'shape';
+  static displayName = 'Shape';
+  static category = 'organization';
+  static icon = '⬜';
+
+  static defaultPorts = [
     {
       id: 'top',
       side: 'top',
@@ -39,22 +51,51 @@ export const ShapeNodeType = {
       position: 0.5,
       label: ''
     }
-  ],
-  defaultStyle: {
+  ];
+
+  static defaultStyle = {
     width: 150,
     height: 150,
     color: '#2d4a2e',
     borderColor: '#66bb6a',
     borderWidth: 2,
     borderRadius: 8
-  },
-  features: {
+  };
+
+  static features = {
     canHaveChildren: false,
     canHaveAttributes: true,     // Can have custom shape properties
     canResize: true,
-    canContainNodes: false
-  },
-  renderContent: (node, container) => {
+    canContainNodes: false,
+    canCollapse: false,
+    canEdit: true
+  };
+
+  // =========================================================================
+  // Port Generation
+  // =========================================================================
+
+  /**
+   * Shapes have 4-sided bidirectional ports.
+   *
+   * @param {Object} node - The node instance
+   * @returns {Array} Array of port definitions
+   */
+  static getPorts(node) {
+    return this.defaultPorts;
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+
+  /**
+   * Render shape node content with shape-specific styling.
+   *
+   * @param {Object} node - The node instance
+   * @param {HTMLElement} container - Container element
+   */
+  static renderContent(node, container) {
     const content = document.createElement('div');
     content.className = 'shape-node-content';
     content.style.display = 'flex';
@@ -86,4 +127,7 @@ export const ShapeNodeType = {
 
     container.appendChild(content);
   }
-};
+}
+
+// Export as object for backwards compatibility
+export const ShapeNodeType = ShapeNode;

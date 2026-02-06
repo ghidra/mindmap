@@ -1,24 +1,70 @@
 /**
  * Class Node - Represents a class definition
- * Can have children (methods, properties)
+ *
+ * Can have children (methods, properties).
+ * Dynamically generates ports based on class properties.
+ *
+ * @extends BaseNodeType
  */
 
 import { BaseNodeType } from '../BaseNodeType.js';
 import { inferDataType } from '../../core/PortSystem.js';
 
-export const ClassNodeType = {
-  id: 'class',
-  name: 'Class',
-  category: 'code',
-  icon: '🔷',
+/**
+ * Class Node Type class.
+ */
+export class ClassNode extends BaseNodeType {
+  // =========================================================================
+  // Static Properties
+  // =========================================================================
+
+  static id = 'class';
+  static displayName = 'Class';
+  static category = 'code';
+  static icon = '🔷';
+
+  static defaultPorts = [
+    {
+      id: 'instance',
+      side: 'right',
+      type: 'output',
+      position: 0.5,
+      label: 'instance',
+      dataType: 'object'
+    }
+  ];
+
+  static defaultStyle = {
+    width: 180,
+    height: 110,
+    color: '#1e3a5f',
+    borderColor: '#4a90e2',
+    borderWidth: 2,
+    borderRadius: 4
+  };
+
+  static features = {
+    canHaveChildren: true,
+    canHaveAttributes: true,
+    canResize: false,
+    canContainNodes: false,
+    canCollapse: true,
+    canEdit: true
+  };
+
+  // =========================================================================
+  // Port Generation
+  // =========================================================================
 
   /**
-   * Generate ports dynamically based on class members (properties)
-   * Supports manual override via node.inputPorts and node.outputPorts arrays
+   * Generate ports dynamically based on class members (properties).
+   *
+   * Supports manual override via node.inputPorts and node.outputPorts arrays.
+   *
    * @param {Object} node - The node instance
    * @returns {Array} Array of port definitions
    */
-  getPorts: (node) => {
+  static getPorts(node) {
     const ports = [];
 
     // Check for manual port override first
@@ -99,22 +145,19 @@ export const ClassNodeType = {
     }
 
     return ports;
-  },
-  defaultStyle: {
-    width: 180,
-    height: 110,
-    color: '#1e3a5f',
-    borderColor: '#4a90e2',
-    borderWidth: 2,
-    borderRadius: 4
-  },
-  features: {
-    canHaveChildren: true,      // Can contain methods, properties
-    canHaveAttributes: true,     // Can have class-level attributes
-    canResize: false,
-    canContainNodes: false
-  },
-  renderContent: (node, container) => {
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+
+  /**
+   * Render class node content.
+   *
+   * @param {Object} node - The node instance
+   * @param {HTMLElement} container - Container element
+   */
+  static renderContent(node, container) {
     const content = document.createElement('div');
     content.className = 'class-node-content';
 
@@ -151,4 +194,21 @@ export const ClassNodeType = {
 
     container.appendChild(content);
   }
-};
+
+  // =========================================================================
+  // Behavior
+  // =========================================================================
+
+  /**
+   * Handle double-click to navigate into class.
+   *
+   * @param {Object} node - The node instance
+   * @param {Event} event - Click event
+   */
+  static onDoubleClick(node, event) {
+    // Navigation handled by event manager
+  }
+}
+
+// Export as object for backwards compatibility
+export const ClassNodeType = ClassNode;

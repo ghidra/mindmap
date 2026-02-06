@@ -164,14 +164,14 @@ export class BaseParser {
 
 ### Tasks
 
-- [ ] **P1.1** Create `BaseParser` abstract class with standard interface
-- [ ] **P1.2** Create `ParserRegistry` for file-type to parser mapping
-- [ ] **P1.3** Refactor JS parsing from `ParserIntegrationModule` into `JavaScriptParser`
-- [ ] **P1.4** Create `ProjectParser` that orchestrates multi-file parsing
-- [ ] **P1.5** Implement `ASTCache` for parsed content caching
-- [ ] **P1.6** Define and implement `ProjectData` serialization format
-- [ ] **P1.7** Add reference extraction (what symbols does a file use from others)
-- [ ] **P1.8** Create `HTMLParser` for entry point detection
+- [x] **P1.1** Create `BaseParser` abstract class with standard interface <!-- DONE 2024-01-15 -->
+- [x] **P1.2** Create `ParserRegistry` for file-type to parser mapping <!-- DONE 2024-01-15 -->
+- [x] **P1.3** Refactor JS parsing from `ParserIntegrationModule` into `JavaScriptParser` <!-- DONE 2024-01-15 -->
+- [x] **P1.4** Create `ProjectParser` that orchestrates multi-file parsing <!-- DONE 2024-01-15 -->
+- [x] **P1.5** Implement `ASTCache` for parsed content caching <!-- DONE 2024-01-15 -->
+- [x] **P1.6** Define and implement `ProjectData` serialization format <!-- DONE 2024-01-15 -->
+- [x] **P1.7** Add reference extraction (what symbols does a file use from others) <!-- DONE 2024-01-15 -->
+- [x] **P1.8** Create `HTMLParser` for entry point detection <!-- DONE 2024-01-15 -->
 
 ---
 
@@ -248,12 +248,12 @@ export class BaseNodeType {
 
 ### Tasks
 
-- [ ] **N2.1** Create `BaseNodeType` class with full interface
-- [ ] **N2.2** Refactor existing node types to extend `BaseNodeType`
-- [ ] **N2.3** Create `NodeFactory` for consistent node creation
-- [ ] **N2.4** Implement node serialization/deserialization methods
-- [ ] **N2.5** Add `MethodNode` type for class methods
-- [ ] **N2.6** Standardize node data structure across all types
+- [x] **N2.1** Create `BaseNodeType` class with full interface <!-- DONE 2024-01-15 -->
+- [x] **N2.2** Refactor existing node types to extend `BaseNodeType`
+- [x] **N2.3** Create `NodeFactory` for consistent node creation <!-- DONE 2024-01-15 -->
+- [x] **N2.4** Implement node serialization/deserialization methods <!-- DONE 2024-01-15 - in BaseNodeType -->
+- [x] **N2.5** Add `MethodNode` type for class methods <!-- DONE 2026-02-03 -->
+- [x] **N2.6** Standardize node data structure across all types <!-- DONE 2026-02-03 -->
 
 ---
 
@@ -350,13 +350,13 @@ export class ConnectionValidator {
 
 ### Tasks
 
-- [ ] **C3.1** Create `ConnectionManager` with CRUD operations
-- [ ] **C3.2** Implement `ConnectionValidator` with rules
-- [ ] **C3.3** Add connection type definitions
-- [ ] **C3.4** Update `PortSystem` with data type support
-- [ ] **C3.5** Implement connection labels on rendered bezier curves
-- [ ] **C3.6** Add animated connections for active data flow
-- [ ] **C3.7** Create connection context menu (delete, edit style)
+- [x] **C3.1** Create `ConnectionManager` with CRUD operations <!-- DONE 2026-02-03 -->
+- [x] **C3.2** Implement `ConnectionValidator` with rules <!-- DONE 2026-02-03 -->
+- [x] **C3.3** Add connection type definitions <!-- DONE 2026-02-03 -->
+- [x] **C3.4** Update `PortSystem` with data type support <!-- DONE 2026-02-03 -->
+- [x] **C3.5** Implement connection labels on rendered bezier curves <!-- DONE 2026-02-03 -->
+- [x] **C3.6** Add animated connections for active data flow <!-- DONE 2026-02-03 -->
+- [x] **C3.7** Create connection context menu (delete, edit style) <!-- DONE 2026-02-03 -->
 
 ---
 
@@ -467,15 +467,15 @@ mindmap/preferences                     # User preferences
 
 ### Tasks
 
-- [ ] **S4.1** Create `StateManager` with event system
-- [ ] **S4.2** Create `StorageAdapter` abstract interface
-- [ ] **S4.3** Implement `LocalStorageAdapter`
-- [ ] **S4.4** Implement `IndexedDBAdapter` for larger data
-- [ ] **S4.5** Create `ProjectStore` for project data
-- [ ] **S4.6** Create `ViewStore` for mode-specific view state
-- [ ] **S4.7** Implement `Serializer` with versioning
-- [ ] **S4.8** Migrate existing state to new structure
-- [ ] **S4.9** Add auto-save with debouncing
+- [x] **S4.1** Create `StateManager` with event system <!-- DONE 2024-01-15 -->
+- [x] **S4.2** Create `StorageAdapter` abstract interface <!-- DONE 2024-01-15 -->
+- [x] **S4.3** Implement `LocalStorageAdapter` <!-- DONE 2024-01-15 -->
+- [x] **S4.4** Implement `IndexedDBAdapter` for larger data <!-- DONE 2024-01-15 -->
+- [x] **S4.5** Create `ProjectStore` for project data <!-- DONE 2024-01-15 -->
+- [x] **S4.6** Create `ViewStore` for mode-specific view state <!-- DONE 2024-01-15 -->
+- [x] **S4.7** Implement `Serializer` with versioning <!-- DONE 2024-01-15 -->
+- [x] **S4.8** Migrate existing state to new structure <!-- DONE 2024-01-15 -->
+- [x] **S4.9** Add auto-save with debouncing <!-- DONE 2024-01-15 -->
 
 ---
 
@@ -543,13 +543,13 @@ export class BaseMode {
 
 ### Tasks
 
-- [ ] **M5.1** Create `BaseMode` abstract class
-- [ ] **M5.2** Create `ModeManager` with lifecycle hooks
-- [ ] **M5.3** Refactor `HierarchicalMode` to use interface
-- [ ] **M5.4** Refactor `FlowMode` to use interface
-- [ ] **M5.5** Implement `NotesMode` following same pattern
-- [ ] **M5.6** Extract layout algorithms to separate files
-- [ ] **M5.7** Implement mode-specific toolbar/controls
+- [x] **M5.1** Create `BaseMode` abstract class <!-- DONE 2024-02-04 -->
+- [x] **M5.2** Create `ModeManager` with lifecycle hooks <!-- DONE 2024-02-04 -->
+- [x] **M5.3** Refactor `HierarchicalMode` to use interface <!-- DONE 2024-02-04 -->
+- [x] **M5.4** Refactor `FlowMode` to use interface <!-- DONE 2024-02-04 -->
+- [x] **M5.5** Implement `NotesMode` following same pattern <!-- DONE 2024-02-04 -->
+- [x] **M5.6** Extract layout algorithms to separate files <!-- DONE 2024-02-04 -->
+- [x] **M5.7** Implement mode-specific toolbar/controls <!-- DONE 2024-02-04 -->
 
 ---
 
@@ -590,11 +590,11 @@ v2/ui/
 
 ### Tasks
 
-- [ ] **U6.1** Split `style.css` into modular CSS files
-- [ ] **U6.2** Create `ContextMenu` component for right-click menus
-- [ ] **U6.3** Create `Toolbar` component for mode-specific controls
-- [ ] **U6.4** Implement theme switching
-- [ ] **U6.5** Add keyboard shortcut hints to UI
+- [x] **U6.1** Split `style.css` into modular CSS files <!-- DONE 2026-02-04 -->
+- [x] **U6.2** Create `ContextMenu` component for right-click menus <!-- DONE 2026-02-04 -->
+- [x] **U6.3** Create `Toolbar` component for mode-specific controls <!-- DONE 2026-02-04 (ModeToolbar) -->
+- [x] **U6.4** Implement theme switching <!-- DONE 2026-02-04 -->
+- [x] **U6.5** Add keyboard shortcut hints to UI <!-- DONE 2026-02-04 -->
 
 ---
 
@@ -676,14 +676,14 @@ export class CommandManager {
 
 ### Tasks
 
-- [ ] **CMD7.1** Create `Command` base class
-- [ ] **CMD7.2** Create `CommandManager` with history management
-- [ ] **CMD7.3** Implement `CreateNodeCommand`, `DeleteNodeCommand`
-- [ ] **CMD7.4** Implement `MoveNodeCommand` with merge support
-- [ ] **CMD7.5** Implement `CreateConnectionCommand`, `DeleteConnectionCommand`
-- [ ] **CMD7.6** Integrate CommandManager with EventManager
-- [ ] **CMD7.7** Add Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts
-- [ ] **CMD7.8** Add undo/redo buttons to toolbar
+- [x] **CMD7.1** Create `Command` base class <!-- DONE 2024-01-15 -->
+- [x] **CMD7.2** Create `CommandManager` with history management <!-- DONE 2024-01-15 -->
+- [x] **CMD7.3** Implement `CreateNodeCommand`, `DeleteNodeCommand` <!-- DONE 2024-01-15 -->
+- [x] **CMD7.4** Implement `MoveNodeCommand` with merge support <!-- DONE 2024-01-15 -->
+- [x] **CMD7.5** Implement `CreateConnectionCommand`, `DeleteConnectionCommand` <!-- DONE 2024-01-15 -->
+- [x] **CMD7.6** Integrate CommandManager with EventManager <!-- DONE 2024-01-15 -->
+- [x] **CMD7.7** Add Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts <!-- DONE 2024-01-15 -->
+- [x] **CMD7.8** Add undo/redo buttons to toolbar <!-- DONE 2024-01-15 -->
 
 ---
 
@@ -783,13 +783,13 @@ export class ShortcutManager {
 
 ### Tasks
 
-- [ ] **SET8.1** Create `SettingsManager` with localStorage persistence
-- [ ] **SET8.2** Create `ShortcutManager` with customizable bindings
-- [ ] **SET8.3** Define default settings and shortcuts
-- [ ] **SET8.4** Create `SettingsPanel` UI component
-- [ ] **SET8.5** Add shortcut customization UI
-- [ ] **SET8.6** Migrate existing shortcuts to ShortcutManager
-- [ ] **SET8.7** Add settings button to toolbar
+- [x] **SET8.1** Create `SettingsManager` with localStorage persistence <!-- DONE 2026-02-04 -->
+- [x] **SET8.2** Create `ShortcutManager` with customizable bindings <!-- DONE 2026-02-04 -->
+- [x] **SET8.3** Define default settings and shortcuts <!-- DONE 2026-02-04 -->
+- [x] **SET8.4** Create `SettingsPanel` UI component <!-- DONE 2026-02-04 -->
+- [x] **SET8.5** Add shortcut customization UI <!-- DONE 2026-02-04 -->
+- [x] **SET8.6** Migrate existing shortcuts to ShortcutManager <!-- DONE 2026-02-04 -->
+- [x] **SET8.7** Add settings button to toolbar <!-- DONE 2026-02-04 -->
 
 ---
 
@@ -889,13 +889,13 @@ export class SessionManager {
 
 ### Tasks
 
-- [ ] **SES9.1** Define session file format with versioning
-- [ ] **SES9.2** Create `SessionManager` with export/import
-- [ ] **SES9.3** Add "New Session" functionality
-- [ ] **SES9.4** Add "Save Session" / "Save Session As"
-- [ ] **SES9.5** Add "Open Session" with file picker
-- [ ] **SES9.6** Add unsaved changes warning on close/new
-- [ ] **SES9.7** Add recent sessions list
+- [x] **SES9.1** Define session file format with versioning <!-- DONE 2026-02-04 -->
+- [x] **SES9.2** Create `SessionManager` with export/import <!-- DONE 2026-02-04 -->
+- [x] **SES9.3** Add "New Session" functionality <!-- DONE 2026-02-04 -->
+- [x] **SES9.4** Add "Save Session" / "Save Session As" <!-- DONE 2026-02-04 -->
+- [x] **SES9.5** Add "Open Session" with file picker <!-- DONE 2026-02-04 -->
+- [x] **SES9.6** Add unsaved changes warning on close/new <!-- DONE 2026-02-04 -->
+- [x] **SES9.7** Add recent sessions list <!-- DONE 2026-02-04 -->
 
 ---
 

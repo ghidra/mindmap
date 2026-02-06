@@ -1,12 +1,19 @@
 /**
  * Event Manager - Unified event handling with delegation
  * Handles all node, port, and canvas interactions without re-binding on render
+ *
+ * Integrates with CommandManager for undo/redo support.
  */
 
 import { state, selectNode as stateSelectNode, clearSelection, removeNode, findNode, addConnection as stateAddConnection } from '../state.js';
 import { portSystem } from './PortSystem.js';
 import { nodeRenderer } from './NodeRenderer.js';
 import { groupManager } from './GroupManager.js';
+
+// Command system imports
+import { commandManager } from '../commands/CommandManager.js';
+import { MoveNodeCommand, BatchMoveNodesCommand, ResizeNodeCommand, DeleteNodeCommand, BatchDeleteNodesCommand } from '../commands/commands/NodeCommands.js';
+import { CreateConnectionCommand } from '../commands/commands/ConnectionCommands.js';
 
 export class EventManager {
   constructor() {
@@ -23,6 +30,10 @@ export class EventManager {
     this.dragOffset = { x: 0, y: 0 };
     this.panStart = { x: 0, y: 0 };
     this.resizeStart = { x: 0, y: 0, width: 0, height: 0 };
+
+    // Initial state capture for undo/redo
+    this.dragStartPosition = { x: 0, y: 0 };  // Node position at drag start
+    this.resizeStartDimensions = { width: 0, height: 0 };  // Node size at resize start
 
     this.spaceKeyPressed = false;
 
@@ -326,6 +337,10 @@ export class EventManager {
     this.dragOffset.x = mouseX - nodeX - state.viewport.x;
     this.dragOffset.y = mouseY - nodeY - state.viewport.y;
 
+    // Capture initial position for undo/redo
+    this.dragStartPosition.x = nodeX;
+    this.dragStartPosition.y = nodeY;
+
     document.body.style.userSelect = 'none';
     this.triggerRender();
   }
@@ -436,7 +451,12 @@ export class EventManager {
   }
 
   endNodeDrag() {
-    const node = findNode(this.draggedNodeId);
+    let node = findNode(this.draggedNodeId);
+    // Also check execution graph for flow mode groups
+    if (!node && state.currentMode === 'flow' && state.flowConfig.executionGraph) {
+      const graphNode = state.flowConfig.executionGraph.nodes.find(gn => gn.id === this.draggedNodeId);
+      node = graphNode?.originalNode;
+    }
 
     // Update group containment if node was moved
     if (node && node.type !== 'group') {
@@ -444,6 +464,41 @@ export class EventManager {
     }
 
     document.body.style.userSelect = '';
+
+    // Create move command for undo/redo (if not already in undo/redo operation)
+    if (node && !commandManager.isUndoingOrRedoing()) {
+      // Get final position
+      let finalX, finalY;
+      if (state.currentMode === 'flow' && (node.flowX !== undefined || node.flowY !== undefined)) {
+        finalX = node.flowX ?? node.position?.x ?? node.x ?? 0;
+        finalY = node.flowY ?? node.position?.y ?? node.y ?? 0;
+      } else if (node.position) {
+        finalX = node.position.x ?? 0;
+        finalY = node.position.y ?? 0;
+      } else {
+        finalX = node.x ?? 0;
+        finalY = node.y ?? 0;
+      }
+
+      // Only create command if position actually changed
+      const dx = Math.abs(finalX - this.dragStartPosition.x);
+      const dy = Math.abs(finalY - this.dragStartPosition.y);
+
+      if (dx > 1 || dy > 1) {  // Threshold to avoid micro-movements
+        const moveCommand = new MoveNodeCommand(
+          this.draggedNodeId,
+          finalX,
+          finalY,
+          {
+            oldX: this.dragStartPosition.x,
+            oldY: this.dragStartPosition.y,
+            mode: state.currentMode
+          }
+        );
+        // Skip execution since we already moved the node during drag
+        commandManager.execute(moveCommand, true);
+      }
+    }
 
     // Do a full render now that dragging is done to sync connections
     this.triggerRender();
@@ -507,6 +562,10 @@ export class EventManager {
     this.resizeStart.width = node.size?.width ?? node.width ?? 180;
     this.resizeStart.height = node.size?.height ?? node.height ?? 100;
 
+    // Capture initial dimensions for undo/redo
+    this.resizeStartDimensions.width = this.resizeStart.width;
+    this.resizeStartDimensions.height = this.resizeStart.height;
+
     document.body.style.userSelect = 'none';
     e.preventDefault();
     e.stopPropagation();
@@ -535,6 +594,32 @@ export class EventManager {
 
   endResize() {
     document.body.style.userSelect = '';
+
+    // Create resize command for undo/redo
+    const node = findNode(this.resizingNodeId);
+    if (node && !commandManager.isUndoingOrRedoing()) {
+      const finalWidth = node.size?.width ?? node.width ?? 180;
+      const finalHeight = node.size?.height ?? node.height ?? 100;
+
+      // Only create command if size actually changed
+      const dw = Math.abs(finalWidth - this.resizeStartDimensions.width);
+      const dh = Math.abs(finalHeight - this.resizeStartDimensions.height);
+
+      if (dw > 1 || dh > 1) {
+        const resizeCommand = new ResizeNodeCommand(
+          this.resizingNodeId,
+          finalWidth,
+          finalHeight,
+          {
+            oldWidth: this.resizeStartDimensions.width,
+            oldHeight: this.resizeStartDimensions.height
+          }
+        );
+        // Skip execution since we already resized during drag
+        commandManager.execute(resizeCommand, true);
+      }
+    }
+
     this.triggerSave();
   }
 
@@ -609,7 +694,7 @@ export class EventManager {
       return;
     }
 
-    const connection = {
+    const connectionData = {
       id: `conn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       from: { nodeId: fromNodeId, portId: fromPortId },
       to: { nodeId: toNodeId, portId: toPortId },
@@ -621,7 +706,15 @@ export class EventManager {
       }
     };
 
-    stateAddConnection(connection);
+    // Use command system for undo/redo support
+    if (!commandManager.isUndoingOrRedoing()) {
+      const command = new CreateConnectionCommand(connectionData);
+      commandManager.execute(command);
+    } else {
+      // Direct add during undo/redo
+      stateAddConnection(connectionData);
+    }
+
     this.triggerSave();
     this.triggerRender();
   }
@@ -629,7 +722,14 @@ export class EventManager {
   handleDelete(e) {
     const nodeId = e.target.dataset.nodeId;
     if (nodeId) {
-      removeNode(nodeId);
+      // Use command system for undo/redo support
+      if (!commandManager.isUndoingOrRedoing()) {
+        const command = new DeleteNodeCommand(nodeId);
+        commandManager.execute(command);
+      } else {
+        // Direct delete during undo/redo
+        removeNode(nodeId);
+      }
       nodeRenderer.removeRenderedNode(nodeId);
       this.triggerSave();
       this.triggerRender();
@@ -637,10 +737,29 @@ export class EventManager {
   }
 
   deleteSelectedNodes() {
+    if (state.selectedNodes.length === 0) return;
+
+    // Use command system for undo/redo support
+    if (!commandManager.isUndoingOrRedoing()) {
+      if (state.selectedNodes.length === 1) {
+        const command = new DeleteNodeCommand(state.selectedNodes[0]);
+        commandManager.execute(command);
+      } else {
+        const command = new BatchDeleteNodesCommand([...state.selectedNodes]);
+        commandManager.execute(command);
+      }
+    } else {
+      // Direct delete during undo/redo
+      state.selectedNodes.forEach(nodeId => {
+        removeNode(nodeId);
+      });
+    }
+
+    // Remove from renderer
     state.selectedNodes.forEach(nodeId => {
-      removeNode(nodeId);
       nodeRenderer.removeRenderedNode(nodeId);
     });
+
     clearSelection();
     this.triggerSave();
     this.triggerRender();

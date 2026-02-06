@@ -10,6 +10,7 @@ import { FileNodeType } from './code/FileNode.js';
 import { DirectoryNodeType } from './code/DirectoryNode.js';
 import { ClassNodeType } from './code/ClassNode.js';
 import { FunctionNodeType } from './code/FunctionNode.js';
+import { MethodNodeType } from './code/MethodNode.js';
 import { TerminalNodeType } from './code/TerminalNode.js';
 
 // Organization category
@@ -32,6 +33,7 @@ export function registerCoreNodeTypes() {
   nodeTypeRegistry.register(DirectoryNodeType);
   nodeTypeRegistry.register(ClassNodeType);
   nodeTypeRegistry.register(FunctionNodeType);
+  nodeTypeRegistry.register(MethodNodeType);
   nodeTypeRegistry.register(TerminalNodeType);
 
   // Organization types

@@ -1,0 +1,141 @@
+/**
+ * Base Layout Styles
+ *
+ * Core layout and structural styles for the mindmap application.
+ */
+
+/* Reset and base */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Main layout */
+#controls {
+  background: #fff;
+  padding: 6px 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1000;
+}
+
+#breadcrumb {
+  margin-left: 10px;
+  white-space: nowrap;
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+#breadcrumb button {
+  margin-left: 4px;
+}
+
+#main-content {
+  display: flex;
+  height: calc(100% - 46px);
+  position: relative;
+}
+
+#canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #f0f0f0;
+  overflow: hidden;
+  flex: 1;
+  cursor: grab;
+}
+
+#canvas.grabbing {
+  cursor: grabbing;
+}
+
+#connections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Selection box */
+.selection-box {
+  position: absolute;
+  border: 2px dashed #4a90d9;
+  background: rgba(74, 144, 217, 0.1);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Toolbar right section */
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.toolbar-btn {
+  padding: 4px 8px;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.toolbar-btn:hover {
+  background: #e0e0e0;
+}
+
+.toolbar-btn:active {
+  background: #d0d0d0;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background: #ddd;
+  margin: 0 4px;
+}
+
+/* Buttons - general */
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}

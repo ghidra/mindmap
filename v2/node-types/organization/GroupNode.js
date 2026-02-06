@@ -1,31 +1,72 @@
 /**
  * Group Node - Container for other nodes
- * Moving the group moves all contained nodes together
+ *
+ * Moving the group moves all contained nodes together.
+ * Groups are visual containers that don't affect hierarchical structure.
+ *
+ * @extends BaseNodeType
  */
 
 import { BaseNodeType } from '../BaseNodeType.js';
 
-export const GroupNodeType = {
-  id: 'group',
-  name: 'Group',
-  category: 'organization',
-  icon: '📦',
-  defaultPorts: [],  // Groups typically don't have ports (their children do)
-  defaultStyle: {
+/**
+ * Group Node Type class.
+ */
+export class GroupNode extends BaseNodeType {
+  // =========================================================================
+  // Static Properties
+  // =========================================================================
+
+  static id = 'group';
+  static displayName = 'Group';
+  static category = 'organization';
+  static icon = '📦';
+
+  static defaultPorts = [];  // Groups typically don't have ports (their children do)
+
+  static defaultStyle = {
     width: 400,
     height: 300,
     color: 'rgba(100, 150, 200, 0.1)',
     borderColor: '#4a90e2',
     borderWidth: 2,
     borderRadius: 8
-  },
-  features: {
+  };
+
+  static features = {
     canHaveChildren: false,      // Groups contain nodes, not hierarchical children
     canHaveAttributes: false,
     canResize: true,             // Groups are resizable
-    canContainNodes: true        // This is the key feature - can contain other nodes
-  },
-  renderContent: (node, container) => {
+    canContainNodes: true,       // This is the key feature - can contain other nodes
+    canCollapse: false,
+    canEdit: true
+  };
+
+  // =========================================================================
+  // Port Generation
+  // =========================================================================
+
+  /**
+   * Groups have no ports by default.
+   *
+   * @param {Object} node - The node instance
+   * @returns {Array} Empty array (no ports)
+   */
+  static getPorts(node) {
+    return [];
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+
+  /**
+   * Render group node content.
+   *
+   * @param {Object} node - The node instance
+   * @param {HTMLElement} container - Container element
+   */
+  static renderContent(node, container) {
     const content = document.createElement('div');
     content.className = 'group-node-content';
     content.style.padding = '8px';
@@ -70,4 +111,7 @@ export const GroupNodeType = {
     container.style.opacity = '0.9';
     container.style.zIndex = '0'; // Groups should be behind regular nodes
   }
-};
+}
+
+// Export as object for backwards compatibility
+export const GroupNodeType = GroupNode;

@@ -1,16 +1,28 @@
 /**
  * Notes Node - Freeform text/notes with rich editing
- * Resizable with 4-sided ports for flexible connections
+ *
+ * Resizable with 4-sided ports for flexible connections.
+ * Supports editable text content via textarea.
+ *
+ * @extends BaseNodeType
  */
 
 import { BaseNodeType } from '../BaseNodeType.js';
 
-export const NotesNodeType = {
-  id: 'note',
-  name: 'Notes',
-  category: 'organization',
-  icon: '📝',
-  defaultPorts: [
+/**
+ * Notes Node Type class.
+ */
+export class NotesNode extends BaseNodeType {
+  // =========================================================================
+  // Static Properties
+  // =========================================================================
+
+  static id = 'note';
+  static displayName = 'Notes';
+  static category = 'organization';
+  static icon = '📝';
+
+  static defaultPorts = [
     {
       id: 'top',
       side: 'top',
@@ -39,22 +51,51 @@ export const NotesNodeType = {
       position: 0.5,
       label: ''
     }
-  ],
-  defaultStyle: {
+  ];
+
+  static defaultStyle = {
     width: 200,
     height: 150,
     color: '#fff9c4',
     borderColor: '#fbc02d',
     borderWidth: 1,
     borderRadius: 4
-  },
-  features: {
+  };
+
+  static features = {
     canHaveChildren: false,
     canHaveAttributes: false,
     canResize: true,             // Notes are resizable
-    canContainNodes: false
-  },
-  renderContent: (node, container) => {
+    canContainNodes: false,
+    canCollapse: false,
+    canEdit: true
+  };
+
+  // =========================================================================
+  // Port Generation
+  // =========================================================================
+
+  /**
+   * Notes have 4-sided bidirectional ports.
+   *
+   * @param {Object} node - The node instance
+   * @returns {Array} Array of port definitions
+   */
+  static getPorts(node) {
+    return this.defaultPorts;
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+
+  /**
+   * Render notes node content with editable textarea.
+   *
+   * @param {Object} node - The node instance
+   * @param {HTMLElement} container - Container element
+   */
+  static renderContent(node, container) {
     const content = document.createElement('div');
     content.className = 'notes-node-content';
     content.style.padding = '8px';
@@ -88,4 +129,7 @@ export const NotesNodeType = {
     content.appendChild(textarea);
     container.appendChild(content);
   }
-};
+}
+
+// Export as object for backwards compatibility
+export const NotesNodeType = NotesNode;

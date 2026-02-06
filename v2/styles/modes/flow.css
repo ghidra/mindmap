@@ -1,0 +1,187 @@
+/**
+ * Flow Mode Styles
+ *
+ * Styles specific to flow visualization mode.
+ */
+
+/* =============== Flow Controls ================= */
+#flow-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#flow-controls button {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+#flow-controls select {
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+}
+
+/* =============== Flow Path Input ================= */
+.flow-path-input-container {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: 12px;
+}
+
+#flow-path-input {
+  width: 250px;
+  padding: 4px 8px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  color: #333;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+#flow-path-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+#flow-path-go-btn,
+#flow-back-btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#flow-path-go-btn {
+  background: #007bff;
+  color: white;
+}
+
+#flow-path-go-btn:hover {
+  background: #0056b3;
+}
+
+#flow-back-btn {
+  background: #6c757d;
+  color: white;
+}
+
+#flow-back-btn:hover {
+  background: #5a6268;
+}
+
+/* =============== Flow Node States ================= */
+.node.flow-entry-point {
+  border: 3px solid #f59e0b !important;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.node.flow-entry-point .node-header {
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: bold;
+}
+
+.node.flow-center-node {
+  border: 3px solid #4a90d9 !important;
+  box-shadow: 0 0 15px rgba(74, 144, 217, 0.4);
+}
+
+.node.flow-incoming {
+  border-left: 4px solid #e67e22 !important;
+}
+
+.node.flow-outgoing {
+  border-right: 4px solid #27ae60 !important;
+}
+
+/* =============== Flow Groups ================= */
+.node.group.flow-group {
+  background: transparent;
+  border: 2px dashed;
+}
+
+.node.group.flow-group[data-direction="incoming"] {
+  border-color: #e67e22;
+  background: rgba(230, 126, 34, 0.05);
+}
+
+.node.group.flow-group[data-direction="outgoing"] {
+  border-color: #27ae60;
+  background: rgba(39, 174, 96, 0.05);
+}
+
+.flow-group-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: #666;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 3px;
+  position: absolute;
+  top: 4px;
+  left: 8px;
+}
+
+/* =============== Synthetic Nodes ================= */
+.node.synthetic-class {
+  background: #f3e8ff;
+  border-color: #9333ea;
+}
+
+.node.synthetic-class .node-header {
+  background: #e9d5ff;
+  color: #6b21a8;
+}
+
+.node.synthetic-method {
+  background: #fae8ff;
+  border-color: #a855f7;
+}
+
+.node.synthetic-method .node-header {
+  background: #f0abfc;
+  color: #701a75;
+}
+
+.node.synthetic-function {
+  background: #d1fae5;
+  border-color: #059669;
+}
+
+.node.synthetic-function .node-header {
+  background: #a7f3d0;
+  color: #065f46;
+  font-weight: 600;
+}
+
+/* =============== Trace Indicators ================= */
+.node.trace-source {
+  box-shadow: 0 0 0 3px #3b82f6, 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.node.trace-target {
+  box-shadow: 0 0 0 3px #ef4444, 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+.trace-depth-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}

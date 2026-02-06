@@ -1,0 +1,379 @@
+/**
+ * Panel Styles
+ *
+ * Styles for side panels, attribute panels, and dialogs.
+ */
+
+/* =============== Attributes Panel ================= */
+#attributes-panel {
+  width: 350px;
+  background: #fff;
+  border-left: 1px solid #ccc;
+  display: none;
+  flex-direction: column;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+#attributes-panel.visible {
+  display: flex;
+}
+
+.panel-header {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: #f8f8f8;
+  gap: 10px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.node-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.node-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.node-title-input {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 6px 8px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  background: #fff;
+}
+
+.node-title-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.node-id {
+  font-size: 11px;
+  color: #999;
+  font-family: monospace;
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  color: #333;
+  background: #eee;
+  border-radius: 3px;
+}
+
+/* Color picker section */
+.color-section {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
+}
+
+.color-section .section-label {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.color-picker {
+  width: 50px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.color-picker:hover {
+  border-color: #007bff;
+}
+
+/* Section headers */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Children section */
+.children-section {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
+}
+
+.children-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.child-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 3px;
+}
+
+.child-name {
+  font-size: 13px;
+  color: #333;
+  flex: 1;
+}
+
+.empty-children,
+.empty-attributes,
+.empty-terminal-attributes {
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+}
+
+/* Buttons */
+.add-child-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.add-child-btn:hover {
+  background: #218838;
+}
+
+.add-terminal-attr-btn {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.add-terminal-attr-btn:hover {
+  background: #138496;
+}
+
+.remove-child,
+.remove-attribute {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.remove-child:hover,
+.remove-attribute:hover {
+  background: #c82333;
+}
+
+/* Terminal section */
+.terminal-section {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  background: #f0f8ff;
+}
+
+.terminal-attributes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.terminal-attribute-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid #b3d9ff;
+  border-radius: 3px;
+  background: #f8fbff;
+  font-size: 12px;
+}
+
+.terminal-attribute-form {
+  padding: 10px;
+  border-top: 1px solid #b3d9ff;
+  background: #f0f8ff;
+  margin-top: 10px;
+}
+
+.terminal-attribute-form h4 {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #0066cc;
+}
+
+/* Attributes list */
+#attributes-list {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.attribute-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  background: #fafafa;
+}
+
+.attribute-name {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+.attribute-type {
+  font-size: 12px;
+  color: #666;
+  background: #e0e0e0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.attribute-value {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 14px;
+  width: 80px;
+}
+
+.attribute-value:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Add attribute form */
+#add-attribute-form {
+  padding: 10px;
+  border-top: 1px solid #eee;
+  background: #f8f8f8;
+}
+
+#add-attribute-form h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.form-row input,
+.form-row select {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.form-row input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+}
+
+.form-row select {
+  width: 120px;
+  min-width: 120px;
+}
+
+.form-row button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.form-row button:hover {
+  background: #0056b3;
+}

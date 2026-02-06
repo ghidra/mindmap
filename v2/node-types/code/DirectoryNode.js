@@ -1,23 +1,78 @@
 /**
  * Directory Node - Represents a directory/folder
+ *
  * Can have hierarchical children (files, subdirectories, etc.)
+ * Dynamically generates ports based on directory contents.
+ *
+ * @extends BaseNodeType
  */
 
+import { BaseNodeType } from '../BaseNodeType.js';
 import { inferDataType } from '../../core/PortSystem.js';
 
-export const DirectoryNodeType = {
-  id: 'directory',
-  name: 'Directory',
-  category: 'code',
-  icon: '📁',
+/**
+ * Directory Node Type class.
+ */
+export class DirectoryNode extends BaseNodeType {
+  // =========================================================================
+  // Static Properties
+  // =========================================================================
+
+  static id = 'directory';
+  static displayName = 'Directory';
+  static category = 'code';
+  static icon = '📁';
+
+  static defaultPorts = [
+    {
+      id: 'parent',
+      side: 'left',
+      type: 'input',
+      position: 0.5,
+      label: 'parent',
+      dataType: 'object'
+    },
+    {
+      id: 'contents',
+      side: 'right',
+      type: 'output',
+      position: 0.5,
+      label: 'contents',
+      dataType: 'object'
+    }
+  ];
+
+  static defaultStyle = {
+    width: 180,
+    height: 100,
+    color: '#3a3a3a',
+    borderColor: '#666',
+    borderWidth: 2,
+    borderRadius: 4
+  };
+
+  static features = {
+    canHaveChildren: true,
+    canHaveAttributes: true,
+    canResize: false,
+    canContainNodes: false,
+    canCollapse: true,
+    canEdit: true
+  };
+
+  // =========================================================================
+  // Port Generation
+  // =========================================================================
 
   /**
-   * Generate ports dynamically
-   * Supports manual override via node.inputPorts and node.outputPorts arrays
+   * Generate ports dynamically.
+   *
+   * Supports manual override via node.inputPorts and node.outputPorts arrays.
+   *
    * @param {Object} node - The node instance
    * @returns {Array} Array of port definitions
    */
-  getPorts: (node) => {
+  static getPorts(node) {
     const ports = [];
 
     // Check for manual input port override
@@ -73,22 +128,19 @@ export const DirectoryNodeType = {
     }
 
     return ports;
-  },
-  defaultStyle: {
-    width: 180,
-    height: 100,
-    color: '#3a3a3a',
-    borderColor: '#666',
-    borderWidth: 2,
-    borderRadius: 4
-  },
-  features: {
-    canHaveChildren: true,      // Can contain files, subdirectories, etc.
-    canHaveAttributes: true,
-    canResize: false,
-    canContainNodes: false
-  },
-  renderContent: (node, container) => {
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+
+  /**
+   * Render directory node content.
+   *
+   * @param {Object} node - The node instance
+   * @param {HTMLElement} container - Container element
+   */
+  static renderContent(node, container) {
     const content = document.createElement('div');
     content.className = 'directory-node-content';
 
@@ -120,4 +172,21 @@ export const DirectoryNodeType = {
 
     container.appendChild(content);
   }
-};
+
+  // =========================================================================
+  // Behavior
+  // =========================================================================
+
+  /**
+   * Handle double-click to navigate into directory.
+   *
+   * @param {Object} node - The node instance
+   * @param {Event} event - Click event
+   */
+  static onDoubleClick(node, event) {
+    // Navigation handled by event manager
+  }
+}
+
+// Export as object for backwards compatibility
+export const DirectoryNodeType = DirectoryNode;

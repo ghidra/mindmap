@@ -1,0 +1,28 @@
+/**
+ * Mindmap Styles - Main Entry Point
+ *
+ * This file imports all modular CSS files.
+ * Use this file as the main stylesheet instead of style.css
+ *
+ * Structure:
+ * - base.css      : Core layout and structural styles
+ * - panels.css    : Side panels and attribute panels
+ * - nodes.css     : Node rendering styles
+ * - ports.css     : Connection port styles
+ * - modes/        : Mode-specific styles
+ * - themes/       : Color themes
+ */
+
+/* Core styles */
+@import url('./base.css');
+@import url('./panels.css');
+@import url('./nodes.css');
+@import url('./ports.css');
+
+/* Mode-specific styles */
+@import url('./modes/flow.css');
+@import url('./modes/notes.css');
+
+/* Themes */
+@import url('./themes/light.css');
+@import url('./themes/dark.css');

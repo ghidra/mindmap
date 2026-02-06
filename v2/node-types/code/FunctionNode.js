@@ -1,24 +1,70 @@
 /**
  * Function Node - Represents a function or method
- * Can have attributes for parameters
+ *
+ * Can have attributes for parameters.
+ * Dynamically generates ports based on function parameters.
+ *
+ * @extends BaseNodeType
  */
 
 import { BaseNodeType } from '../BaseNodeType.js';
 import { inferDataType } from '../../core/PortSystem.js';
 
-export const FunctionNodeType = {
-  id: 'function',
-  name: 'Function',
-  category: 'code',
-  icon: '⚡',
+/**
+ * Function Node Type class.
+ */
+export class FunctionNode extends BaseNodeType {
+  // =========================================================================
+  // Static Properties
+  // =========================================================================
+
+  static id = 'function';
+  static displayName = 'Function';
+  static category = 'code';
+  static icon = '⚡';
+
+  static defaultPorts = [
+    {
+      id: 'return',
+      side: 'right',
+      type: 'output',
+      position: 0.5,
+      label: 'return',
+      dataType: 'unknown'
+    }
+  ];
+
+  static defaultStyle = {
+    width: 180,
+    height: 100,
+    color: '#3a2847',
+    borderColor: '#ba68c8',
+    borderWidth: 2,
+    borderRadius: 4
+  };
+
+  static features = {
+    canHaveChildren: false,
+    canHaveAttributes: true,
+    canResize: false,
+    canContainNodes: false,
+    canCollapse: false,
+    canEdit: true
+  };
+
+  // =========================================================================
+  // Port Generation
+  // =========================================================================
 
   /**
-   * Generate ports dynamically based on function parameters
-   * Supports manual override via node.inputPorts and node.outputPorts arrays
+   * Generate ports dynamically based on function parameters.
+   *
+   * Supports manual override via node.inputPorts and node.outputPorts arrays.
+   *
    * @param {Object} node - The node instance
    * @returns {Array} Array of port definitions
    */
-  getPorts: (node) => {
+  static getPorts(node) {
     const ports = [];
 
     // Check for manual port override first
@@ -107,22 +153,19 @@ export const FunctionNodeType = {
     }
 
     return ports;
-  },
-  defaultStyle: {
-    width: 180,
-    height: 100,
-    color: '#3a2847',
-    borderColor: '#ba68c8',
-    borderWidth: 2,
-    borderRadius: 4
-  },
-  features: {
-    canHaveChildren: false,      // Functions typically don't have hierarchical children
-    canHaveAttributes: true,     // Can have parameters as attributes
-    canResize: false,
-    canContainNodes: false
-  },
-  renderContent: (node, container) => {
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+
+  /**
+   * Render function node content.
+   *
+   * @param {Object} node - The node instance
+   * @param {HTMLElement} container - Container element
+   */
+  static renderContent(node, container) {
     const content = document.createElement('div');
     content.className = 'function-node-content';
 
@@ -169,4 +212,7 @@ export const FunctionNodeType = {
 
     container.appendChild(content);
   }
-};
+}
+
+// Export as object for backwards compatibility
+export const FunctionNodeType = FunctionNode;

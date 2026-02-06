@@ -1,0 +1,268 @@
+/**
+ * Node Styles
+ *
+ * Styles for node rendering, including headers, bodies, and inline attributes.
+ */
+
+/* =============== Base Node ================= */
+.node {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: default;
+  min-width: 120px;
+  overflow: visible;
+}
+
+.node.selected {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.3), 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.node-header {
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  border-radius: 5px 5px 0 0;
+  padding: 8px 10px;
+  cursor: grab;
+  user-select: none;
+}
+
+.node-header:active {
+  cursor: grabbing;
+}
+
+.node-header input[type="text"] {
+  margin: 0;
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-weight: 500;
+  cursor: text;
+}
+
+.node-header input[type="text"]:focus {
+  outline: none;
+  background: #fff;
+  border: 1px solid #4CAF50;
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+.node-body {
+  padding: 8px 10px;
+}
+
+.node-body button {
+  margin: 4px 2px;
+  min-width: 30px;
+}
+
+.node button.hidden {
+  display: none;
+}
+
+/* =============== Terminal Node ================= */
+.terminal-node {
+  border: 2px solid #17a2b8;
+  background: #e3f2fd;
+  box-shadow: 2px 2px 8px rgba(23, 162, 184, 0.3);
+}
+
+.terminal-title {
+  background: #f8fbff;
+  border: 1px solid #b3d9ff;
+  color: #0066cc;
+  font-weight: bold;
+  cursor: default;
+}
+
+.terminal-title:focus {
+  outline: none;
+  border-color: #17a2b8;
+  box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.25);
+}
+
+.terminal-attr-toggle {
+  background: #17a2b8;
+  color: white;
+}
+
+.terminal-attr-toggle:hover {
+  background: #138496;
+}
+
+.terminal-attributes-list {
+  border-left: 2px solid #17a2b8;
+  background: #f0f8ff;
+}
+
+.terminal-node-attribute-item {
+  background: #f8fbff;
+  border: 1px solid #b3d9ff;
+}
+
+.terminal-node-attribute-item .attr-name {
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.terminal-node-attribute-item .attr-value {
+  border-color: #b3d9ff;
+}
+
+.terminal-node-attribute-item .attr-value:focus {
+  border-color: #17a2b8;
+  box-shadow: 0 0 0 1px rgba(23, 162, 184, 0.25);
+}
+
+/* =============== Node Buttons ================= */
+.node button.attr-toggle {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 2px;
+}
+
+.node button.attr-toggle:hover {
+  background: #0056b3;
+}
+
+.node button:not(.delete-btn):not(.attr-toggle) {
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 2px;
+}
+
+.node button:not(.delete-btn):not(.attr-toggle):hover {
+  background: #5a6268;
+}
+
+.node button.delete-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 2px;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  z-index: 10;
+}
+
+.node button.delete-btn:hover {
+  background: #c82333;
+  opacity: 1;
+}
+
+.node button.delete-btn:active {
+  transform: scale(0.95);
+}
+
+/* =============== Inline Attributes ================= */
+.attributes-list {
+  margin: 6px 0 0 12px;
+  padding: 8px;
+  border-left: 2px solid #007bff;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.node-attribute-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  padding: 4px;
+  background: white;
+  border-radius: 3px;
+  border: 1px solid #e9ecef;
+}
+
+.node-attribute-item:last-child {
+  margin-bottom: 0;
+}
+
+.attr-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: #495057;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.attr-value {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 12px;
+  min-width: 60px;
+}
+
+.attr-value:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.25);
+}
+
+.remove-attr {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.remove-attr:hover {
+  background: #c82333;
+}
+
+/* =============== Connector Handle ================= */
+.handle {
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  background: black;
+  border-radius: 50%;
+  cursor: crosshair;
+  z-index: 10;
+}
+
+.handle:hover {
+  background: #007bff;
+  width: 12px;
+  height: 12px;
+  right: -6px;
+}

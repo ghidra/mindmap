@@ -1,0 +1,358 @@
+/**
+ * Dark Theme
+ *
+ * Dark mode styles for the mindmap application.
+ * Applied when body.dark-mode class is present.
+ */
+
+/* =============== Base Dark Mode ================= */
+body.dark-mode {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* =============== Controls ================= */
+body.dark-mode #controls {
+  background: #2d2d2d;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid #404040;
+}
+
+body.dark-mode #controls button,
+body.dark-mode #breadcrumb button {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #505050;
+}
+
+body.dark-mode #controls button:hover,
+body.dark-mode #breadcrumb button:hover {
+  background: #454545;
+  border-color: #606060;
+}
+
+body.dark-mode .toolbar-btn {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+body.dark-mode .toolbar-btn:hover {
+  background: #454545;
+  border-color: #666;
+}
+
+body.dark-mode .toolbar-separator {
+  background: #505050;
+}
+
+body.dark-mode #darkModeToggle {
+  background: #454545;
+  border-color: #606060;
+}
+
+body.dark-mode .mode-tab {
+  background: #3a3a3a;
+  color: #a0a0a0;
+  border: 1px solid #505050;
+}
+
+body.dark-mode .mode-tab.active {
+  background: #007bff;
+  color: #fff;
+  border-color: #0056b3;
+}
+
+/* =============== Canvas ================= */
+body.dark-mode #canvas {
+  background: #252525;
+}
+
+body.dark-mode #connections line {
+  opacity: 0.8;
+}
+
+/* =============== Nodes ================= */
+body.dark-mode .node {
+  background: #4a90e2;
+  border-color: #357abd;
+  color: #ffffff;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .node-header {
+  background: #357abd;
+  border-bottom: 1px solid #2a5a8d;
+}
+
+body.dark-mode .node-header input {
+  background: #357abd;
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+}
+
+body.dark-mode .node-body button {
+  background: #404040;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+body.dark-mode .node-body button:hover {
+  background: #505050;
+  border-color: #666;
+}
+
+body.dark-mode .handle {
+  background: #606060;
+  border: 2px solid #808080;
+}
+
+body.dark-mode .handle:hover {
+  background: #707070;
+  border-color: #909090;
+}
+
+/* =============== Ports ================= */
+body.dark-mode .port {
+  border-color: #333;
+}
+
+body.dark-mode .port.port-input {
+  background: #2ecc71;
+}
+
+body.dark-mode .port.port-output {
+  background: #3498db;
+}
+
+body.dark-mode .port.port-bidirectional {
+  background: #f1c40f;
+}
+
+/* =============== Panels ================= */
+body.dark-mode #attributes-panel {
+  background: #2d2d2d;
+  border-left: 1px solid #404040;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .panel-header {
+  background: #353535;
+  border-bottom: 1px solid #404040;
+}
+
+body.dark-mode .panel-header h3,
+body.dark-mode .node-label,
+body.dark-mode .section-label {
+  color: #c0c0c0;
+}
+
+body.dark-mode .node-title-input,
+body.dark-mode .attribute-value,
+body.dark-mode #attribute-name,
+body.dark-mode #attribute-value {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+body.dark-mode .node-title-input:focus,
+body.dark-mode .attribute-value:focus,
+body.dark-mode #attribute-name:focus,
+body.dark-mode #attribute-value:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+}
+
+body.dark-mode .node-id,
+body.dark-mode .attribute-type {
+  background: #353535;
+  color: #a0a0a0;
+  border-color: #555;
+}
+
+body.dark-mode .close-btn {
+  color: #a0a0a0;
+}
+
+body.dark-mode .close-btn:hover {
+  color: #e0e0e0;
+  background: #404040;
+}
+
+body.dark-mode select {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+body.dark-mode select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* =============== Sections ================= */
+body.dark-mode .color-section,
+body.dark-mode .children-section,
+body.dark-mode .terminal-section {
+  background: #2a2a2a;
+  border: 1px solid #404040;
+}
+
+body.dark-mode .child-item,
+body.dark-mode .terminal-attribute-item,
+body.dark-mode .attribute-item {
+  background: #353535;
+  border: 1px solid #505050;
+}
+
+body.dark-mode .child-name,
+body.dark-mode .attribute-name {
+  color: #e0e0e0;
+}
+
+body.dark-mode .remove-child,
+body.dark-mode .remove-attribute {
+  background: #8b0000;
+  color: #fff;
+  border: 1px solid #a00;
+}
+
+body.dark-mode .remove-child:hover,
+body.dark-mode .remove-attribute:hover {
+  background: #a00;
+}
+
+body.dark-mode .empty-children,
+body.dark-mode .empty-terminal-attributes,
+body.dark-mode .empty-attributes {
+  color: #808080;
+  background: #2a2a2a;
+}
+
+/* =============== Terminal Nodes ================= */
+body.dark-mode .terminal-node {
+  background: #06b6d4;
+  border-color: #0891b2;
+}
+
+body.dark-mode .terminal-node .node-header {
+  background: #0891b2;
+  border-bottom-color: #0e7490;
+}
+
+body.dark-mode .terminal-title {
+  color: #f0fdff;
+  font-weight: 600;
+}
+
+/* =============== Synthetic Nodes ================= */
+body.dark-mode .node.synthetic-class {
+  background: #8b5cf6;
+  border-color: #6d28d9;
+}
+
+body.dark-mode .node.synthetic-class .node-header {
+  background: #7c3aed;
+  color: #f3e8ff;
+}
+
+body.dark-mode .node.synthetic-method {
+  background: #a78bfa;
+  border-color: #8b5cf6;
+}
+
+body.dark-mode .node.synthetic-method .node-header {
+  background: #9333ea;
+  color: #f3e8ff;
+}
+
+body.dark-mode .node.synthetic-function {
+  background: #10b981;
+  border-color: #059669;
+}
+
+body.dark-mode .node.synthetic-function .node-header {
+  background: #059669;
+  color: #d1fae5;
+  font-weight: 700;
+}
+
+/* =============== Flow Mode ================= */
+body.dark-mode .node.flow-entry-point {
+  background: #f59e0b;
+  border-color: #d97706;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
+}
+
+body.dark-mode .node.flow-entry-point .node-header {
+  background: #d97706;
+  color: #fffbeb;
+  font-weight: 700;
+}
+
+body.dark-mode .node.flow-center-node {
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+}
+
+body.dark-mode .node.flow-incoming {
+  border-left-color: #f97316;
+}
+
+body.dark-mode .node.flow-outgoing {
+  border-right-color: #22c55e;
+}
+
+/* =============== Forms ================= */
+body.dark-mode #add-attribute-form,
+body.dark-mode .terminal-attribute-form {
+  background: #2a2a2a;
+  border: 1px solid #404040;
+}
+
+body.dark-mode #add-attribute-form h4 {
+  color: #c0c0c0;
+  border-bottom-color: #404040;
+}
+
+body.dark-mode #add-attribute-form button[type="submit"],
+body.dark-mode .terminal-attribute-form button[type="submit"] {
+  background: #007bff;
+  color: #fff;
+  border: 1px solid #0056b3;
+}
+
+body.dark-mode #add-attribute-form button[type="submit"]:hover,
+body.dark-mode .terminal-attribute-form button[type="submit"]:hover {
+  background: #0056b3;
+}
+
+body.dark-mode #add-attribute-form button[type="button"],
+body.dark-mode .terminal-attribute-form button[type="button"] {
+  background: #555;
+  color: #e0e0e0;
+  border: 1px solid #666;
+}
+
+body.dark-mode #add-attribute-form button[type="button"]:hover,
+body.dark-mode .terminal-attribute-form button[type="button"]:hover {
+  background: #666;
+}
+
+/* =============== Notes Mode ================= */
+body.dark-mode .note-node {
+  background: #3a3a3a;
+  border-color: #555;
+}
+
+body.dark-mode .note-node .note-header {
+  background: #2d2d2d;
+  color: #e0e0e0;
+}
+
+body.dark-mode .note-node .note-body {
+  background: #3a3a3a;
+  color: #e0e0e0;
+}

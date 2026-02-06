@@ -5,13 +5,45 @@
 
 // Data type colors for typed ports
 const DATA_TYPE_COLORS = {
+  any: '#888888',       // Gray (accepts any type)
   number: '#f39c12',    // Orange
   string: '#27ae60',    // Green
   boolean: '#9b59b6',   // Purple
   array: '#3498db',     // Blue
   object: '#e74c3c',    // Red
   function: '#1abc9c',  // Teal
+  null: '#95a5a6',      // Light gray
+  undefined: '#95a5a6', // Light gray
   unknown: '#000000'    // Black (polymorphic)
+};
+
+/**
+ * Data type compatibility matrix.
+ * Used for validating connections between typed ports.
+ */
+const DATA_TYPE_COMPATIBILITY = {
+  any: ['any', 'number', 'string', 'boolean', 'array', 'object', 'function', 'null', 'undefined', 'unknown'],
+  number: ['any', 'number', 'unknown'],
+  string: ['any', 'string', 'unknown'],
+  boolean: ['any', 'boolean', 'unknown'],
+  array: ['any', 'array', 'unknown'],
+  object: ['any', 'object', 'unknown'],
+  function: ['any', 'function', 'unknown'],
+  null: ['any', 'null', 'object', 'unknown'],
+  undefined: ['any', 'undefined', 'unknown'],
+  unknown: ['any', 'number', 'string', 'boolean', 'array', 'object', 'function', 'null', 'undefined', 'unknown']
+};
+
+/**
+ * Types that can be coerced to other types.
+ * Key is source type, value is array of target types it can coerce to.
+ */
+const DATA_TYPE_COERCION = {
+  number: ['string', 'boolean'],
+  string: ['number', 'boolean'],
+  boolean: ['number', 'string'],
+  array: ['string'],
+  object: ['string', 'boolean']
 };
 
 /**
@@ -177,9 +209,14 @@ export class PortSystem {
    * Validate if two ports can be connected
    * @param {Object} sourcePort - Source port object
    * @param {Object} targetPort - Target port object
+   * @param {Object} [options] - Validation options
+   * @param {boolean} [options.checkDataTypes=false] - Check data type compatibility
+   * @param {boolean} [options.strictTypes=false] - Reject coercible types
    * @returns {boolean} Whether connection is valid
    */
-  canConnect(sourcePort, targetPort) {
+  canConnect(sourcePort, targetPort, options = {}) {
+    const { checkDataTypes = false, strictTypes = false } = options;
+
     // Can't connect a port to itself
     if (sourcePort.nodeId === targetPort.nodeId && sourcePort.id === targetPort.id) {
       return false;
@@ -187,20 +224,107 @@ export class PortSystem {
 
     // Bidirectional ports can connect to anything
     if (sourcePort.type === 'bidirectional' || targetPort.type === 'bidirectional') {
+      // Still check data types if requested
+      if (checkDataTypes) {
+        return this.validateDataTypes(sourcePort, targetPort, strictTypes).valid;
+      }
       return true;
     }
 
     // Output can only connect to input
     if (sourcePort.type === 'output' && targetPort.type === 'input') {
+      if (checkDataTypes) {
+        return this.validateDataTypes(sourcePort, targetPort, strictTypes).valid;
+      }
       return true;
     }
 
     // Input can only connect to output
     if (sourcePort.type === 'input' && targetPort.type === 'output') {
+      if (checkDataTypes) {
+        return this.validateDataTypes(sourcePort, targetPort, strictTypes).valid;
+      }
       return true;
     }
 
     return false;
+  }
+
+  /**
+   * Validate data type compatibility between ports.
+   * @param {Object} sourcePort - Source port object
+   * @param {Object} targetPort - Target port object
+   * @param {boolean} [strictTypes=false] - Reject coercible types
+   * @returns {{valid: boolean, level: string, reason?: string}} Validation result
+   */
+  validateDataTypes(sourcePort, targetPort, strictTypes = false) {
+    const fromType = sourcePort.dataType || 'unknown';
+    const toType = targetPort.dataType || 'unknown';
+
+    const compatibility = this.getTypeCompatibility(fromType, toType);
+
+    switch (compatibility) {
+      case 'exact':
+      case 'compatible':
+        return { valid: true, level: compatibility };
+
+      case 'coerce':
+        if (strictTypes) {
+          return {
+            valid: false,
+            level: 'coerce',
+            reason: `Type '${fromType}' requires coercion to '${toType}' (strict mode)`
+          };
+        }
+        return { valid: true, level: 'coerce' };
+
+      case 'incompatible':
+      default:
+        return {
+          valid: false,
+          level: 'incompatible',
+          reason: `Type '${fromType}' is incompatible with '${toType}'`
+        };
+    }
+  }
+
+  /**
+   * Get detailed connection validation result.
+   * @param {Object} sourcePort - Source port object
+   * @param {Object} targetPort - Target port object
+   * @param {Object} [options] - Validation options
+   * @returns {{valid: boolean, portTypeOk: boolean, dataTypeOk: boolean, reasons: string[]}}
+   */
+  validateConnection(sourcePort, targetPort, options = {}) {
+    const reasons = [];
+
+    // Check port types (input/output)
+    let portTypeOk = false;
+    if (sourcePort.type === 'bidirectional' || targetPort.type === 'bidirectional') {
+      portTypeOk = true;
+    } else if (sourcePort.type === 'output' && targetPort.type === 'input') {
+      portTypeOk = true;
+    } else if (sourcePort.type === 'input' && targetPort.type === 'output') {
+      portTypeOk = true;
+    } else {
+      reasons.push(`Cannot connect ${sourcePort.type} to ${targetPort.type}`);
+    }
+
+    // Check data types
+    const dataTypeResult = this.validateDataTypes(sourcePort, targetPort, options.strictTypes);
+    const dataTypeOk = dataTypeResult.valid;
+
+    if (!dataTypeOk && dataTypeResult.reason) {
+      reasons.push(dataTypeResult.reason);
+    }
+
+    return {
+      valid: portTypeOk && dataTypeOk,
+      portTypeOk,
+      dataTypeOk,
+      dataTypeLevel: dataTypeResult.level,
+      reasons
+    };
   }
 
   /**
@@ -228,6 +352,84 @@ export class PortSystem {
    */
   getDataTypeColor(dataType) {
     return DATA_TYPE_COLORS[dataType] || DATA_TYPE_COLORS.unknown;
+  }
+
+  /**
+   * Check if two data types are compatible for connection.
+   * @param {string} fromType - Source data type
+   * @param {string} toType - Target data type
+   * @returns {boolean} Whether types are compatible
+   */
+  areTypesCompatible(fromType, toType) {
+    fromType = fromType || 'unknown';
+    toType = toType || 'unknown';
+
+    // Check direct compatibility
+    const compatible = DATA_TYPE_COMPATIBILITY[fromType];
+    if (compatible && compatible.includes(toType)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if a type can be coerced to another type.
+   * @param {string} fromType - Source data type
+   * @param {string} toType - Target data type
+   * @returns {boolean} Whether coercion is possible
+   */
+  canCoerce(fromType, toType) {
+    fromType = fromType || 'unknown';
+    toType = toType || 'unknown';
+
+    // Check coercion
+    const coercible = DATA_TYPE_COERCION[fromType];
+    if (coercible && coercible.includes(toType)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Get compatibility level between two types.
+   * @param {string} fromType - Source data type
+   * @param {string} toType - Target data type
+   * @returns {'exact'|'compatible'|'coerce'|'incompatible'} Compatibility level
+   */
+  getTypeCompatibility(fromType, toType) {
+    fromType = fromType || 'unknown';
+    toType = toType || 'unknown';
+
+    // Exact match
+    if (fromType === toType) {
+      return 'exact';
+    }
+
+    // Direct compatibility
+    if (this.areTypesCompatible(fromType, toType)) {
+      return 'compatible';
+    }
+
+    // Coercion possible
+    if (this.canCoerce(fromType, toType)) {
+      return 'coerce';
+    }
+
+    return 'incompatible';
+  }
+
+  /**
+   * Get all compatible types for a given type.
+   * @param {string} dataType - Data type name
+   * @returns {string[]} Compatible types
+   */
+  getCompatibleTypes(dataType) {
+    dataType = dataType || 'unknown';
+    const compatible = DATA_TYPE_COMPATIBILITY[dataType] || [];
+    const coercible = DATA_TYPE_COERCION[dataType] || [];
+    return [...new Set([...compatible, ...coercible])];
   }
 
   /**

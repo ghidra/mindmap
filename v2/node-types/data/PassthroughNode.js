@@ -1,16 +1,28 @@
 /**
  * Passthrough/Null Node - Flow control node
- * Simple node that passes connections through for organization
+ *
+ * Simple node that passes connections through for organization.
+ * Minimal appearance with single input and output ports.
+ *
+ * @extends BaseNodeType
  */
 
 import { BaseNodeType } from '../BaseNodeType.js';
 
-export const PassthroughNodeType = {
-  id: 'passthrough',
-  name: 'Passthrough',
-  category: 'data',
-  icon: '⚪',
-  defaultPorts: [
+/**
+ * Passthrough Node Type class.
+ */
+export class PassthroughNode extends BaseNodeType {
+  // =========================================================================
+  // Static Properties
+  // =========================================================================
+
+  static id = 'passthrough';
+  static displayName = 'Passthrough';
+  static category = 'data';
+  static icon = '⚪';
+
+  static defaultPorts = [
     {
       id: 'input',
       side: 'left',
@@ -25,22 +37,51 @@ export const PassthroughNodeType = {
       position: 0.5,
       label: 'out'
     }
-  ],
-  defaultStyle: {
+  ];
+
+  static defaultStyle = {
     width: 80,
     height: 60,
     color: '#3a3a3a',
     borderColor: '#666',
     borderWidth: 1,
     borderRadius: 30  // Rounded for minimal appearance
-  },
-  features: {
+  };
+
+  static features = {
     canHaveChildren: false,
     canHaveAttributes: false,
     canResize: false,
-    canContainNodes: false
-  },
-  renderContent: (node, container) => {
+    canContainNodes: false,
+    canCollapse: false,
+    canEdit: false
+  };
+
+  // =========================================================================
+  // Port Generation
+  // =========================================================================
+
+  /**
+   * Passthrough has simple input/output ports.
+   *
+   * @param {Object} node - The node instance
+   * @returns {Array} Array of port definitions
+   */
+  static getPorts(node) {
+    return this.defaultPorts;
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+
+  /**
+   * Render passthrough node content with minimal appearance.
+   *
+   * @param {Object} node - The node instance
+   * @param {HTMLElement} container - Container element
+   */
+  static renderContent(node, container) {
     const content = document.createElement('div');
     content.className = 'passthrough-node-content';
     content.style.display = 'flex';
@@ -61,4 +102,7 @@ export const PassthroughNodeType = {
     // Make the node more minimal
     container.style.minHeight = 'unset';
   }
-};
+}
+
+// Export as object for backwards compatibility
+export const PassthroughNodeType = PassthroughNode;
